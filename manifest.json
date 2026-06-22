@@ -1,0 +1,36 @@
+{
+  "name": "CombatFit — מצב 2",
+  "short_name": "מצב 2",
+  "description": "אפליקציית הכושר הטקטית — אימוני כוח, ריצות, תזונה ומעקב התקדמות.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "lang": "he",
+  "dir": "rtl",
+  "background_color": "#525869",
+  "theme_color": "#4FA0FF",
+  "categories": ["health", "fitness", "sports"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
