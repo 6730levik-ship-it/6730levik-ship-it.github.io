@@ -159,6 +159,40 @@
   .scr-nav i{width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.08)}
   .scr-nav i.on{background:var(--azure-bright);box-shadow:0 0 12px var(--azure-bright)}
 
+  /* ===== real app home recreation ===== */
+  .ah-hero{position:relative;height:236px;flex:0 0 auto;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;background:#1A2233}
+  .ah-hero::before{content:"";position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=900&q=70&auto=format&fit=crop') center/cover}
+  .ah-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(79,160,255,.22) 0%,rgba(8,12,22,.12) 34%,rgba(8,12,22,.55) 70%,rgba(8,12,22,.9) 100%)}
+  .ah-top,.ah-bottom{position:relative;z-index:2}
+  .ah-top{display:flex;align-items:center;justify-content:space-between;padding:16px 15px 0}
+  .ah-wordmark{font-weight:900;font-size:1rem;color:#fff;letter-spacing:-.5px}
+  .ah-avatar{width:33px;height:33px;border-radius:50%;background:rgba(255,255,255,.18);border:.5px solid rgba(255,255,255,.42);display:grid;place-items:center;color:#fff;font-weight:900;font-size:.85rem}
+  .ah-bottom{padding:0 15px 16px;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+  .ah-streak{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.3);border-radius:100px;padding:5px 11px;font-size:.6rem;font-weight:700;color:#fff}
+  .ah-dot{width:6px;height:6px;border-radius:50%;background:#2DE0A6;box-shadow:0 0 8px #2DE0A6}
+  .ah-eyebrow{font-size:.7rem;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.5px}
+  .ah-title{font-size:2.5rem;font-weight:900;color:#fff;line-height:.9;letter-spacing:-2px;text-align:right}
+  .ah-cta{margin-top:7px;background:#fff;color:#0F0F14;font-weight:900;font-size:.8rem;border-radius:100px;padding:9px 17px}
+  .ah-body{flex:1;background:#525869;padding:12px;display:flex;flex-direction:column;gap:11px;overflow:hidden}
+  .ah-stats{display:flex;align-items:center;background:#626979;border:.5px solid rgba(220,228,255,.16);border-radius:15px;padding:12px 6px}
+  .ah-stat{flex:1;text-align:center}
+  .ah-stat b{display:block;font-size:1.2rem;font-weight:900;color:#FAFBFE;letter-spacing:-1px}
+  .ah-stat span{display:block;font-size:.46rem;color:#AAAFBC;letter-spacing:1px;margin-top:2px;font-weight:600}
+  .ah-sdiv{width:.5px;height:28px;background:rgba(220,228,255,.16)}
+  .ah-card{background:#626979;border:.5px solid rgba(220,228,255,.16);border-radius:15px;padding:13px}
+  .ah-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+  .ah-card-eyebrow{font-size:.52rem;color:#AAAFBC;letter-spacing:1.5px;font-weight:700}
+  .ah-card-val{font-size:1.35rem;font-weight:900;color:#FAFBFE;letter-spacing:-1px;margin-top:1px}
+  .ah-card-val small{font-size:.58rem;color:#D6DAE4;font-weight:700}
+  .ah-badge{background:#6E7585;border-radius:100px;padding:5px 10px;font-size:.58rem;font-weight:700;color:#D6DAE4}
+  .ah-bars{display:flex;align-items:flex-end;justify-content:space-between;height:58px;padding:0 2px}
+  .ah-bars i{width:9px;background:#6E7585;border-radius:100px}
+  .ah-bars i.cy{background:#2BD4EE}
+  .ah-bars i.vi{background:#4FA0FF}
+  .ah-bar-labels{display:flex;justify-content:space-between;margin-top:6px;padding:0 1px}
+  .ah-bar-labels span{width:9px;text-align:center;font-size:.52rem;color:#AAAFBC;font-weight:600}
+  .ah-bar-labels span.t{color:#4FA0FF;font-weight:900}
+
   /* ===== generic section heading ===== */
   .sec{padding:70px 0}
   .eyebrow{color:var(--azure-bright);font-weight:800;letter-spacing:1px;font-size:.8rem;text-transform:uppercase;margin-bottom:12px;text-align:center}
@@ -339,37 +373,40 @@
         <div class="phone">
           <div class="notch"></div>
           <div class="screen">
-            <div class="scr-top">
-              <div class="scr-greet">בוקר טוב 💪<b>מוכן לאימון?</b></div>
-              <div class="avatar">⚡</div>
+            <div class="ah-hero">
+              <div class="ah-top">
+                <span class="ah-wordmark">CombatFit</span>
+                <span class="ah-avatar">ל</span>
+              </div>
+              <div class="ah-bottom">
+                <span class="ah-streak"><span class="ah-dot"></span>7 ימי רצף · אל תשבור</span>
+                <span class="ah-eyebrow">מוכן, לוחם?</span>
+                <span class="ah-title">ריצת<br>GPS</span>
+                <span class="ah-cta">התחל ריצה ←</span>
+              </div>
             </div>
-            <div class="scr-body">
-              <div class="ring-card">
-                <div class="ring">
-                  <svg width="74" height="74" viewBox="0 0 74 74">
-                    <circle cx="37" cy="37" r="32" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="7"/>
-                    <circle cx="37" cy="37" r="32" fill="none" stroke="#33C2FF" stroke-width="7"
-                      stroke-linecap="round" stroke-dasharray="201" stroke-dashoffset="55"/>
-                  </svg>
-                  <div class="num">73%<small>השבוע</small></div>
-                </div>
-                <div class="ring-meta">
-                  <b>אימון יומי</b>
-                  <span>3 מתוך 4 הושלמו</span>
-                  <span style="color:#33C2FF;font-weight:700">+12% מהשבוע שעבר</span>
-                </div>
+            <div class="ah-body">
+              <div class="ah-stats">
+                <div class="ah-stat"><b style="color:#2BD4EE">7</b><span>DAY STREAK</span></div>
+                <div class="ah-sdiv"></div>
+                <div class="ah-stat"><b>42</b><span>ק"מ החודש</span></div>
+                <div class="ah-sdiv"></div>
+                <div class="ah-stat"><b style="color:#FF9A5C">18</b><span>אימונים</span></div>
               </div>
-              <div class="stat-row">
-                <div class="mini-stat"><div class="k">ריצה</div><div class="v">5.2<small> ק"מ</small></div></div>
-                <div class="mini-stat"><div class="k">קלוריות</div><div class="v">1,840</div></div>
-              </div>
-              <div class="mini-stat">
-                <div class="k">משקל — 30 יום</div>
-                <div class="bars">
-                  <i style="height:90%"></i><i style="height:82%"></i><i style="height:85%"></i>
-                  <i style="height:74%"></i><i style="height:70%"></i><i style="height:62%"></i>
-                  <i style="height:58%"></i><i style="height:50%"></i>
+              <div class="ah-card">
+                <div class="ah-card-head">
+                  <div>
+                    <span class="ah-card-eyebrow">השבוע</span>
+                    <div class="ah-card-val">12.4 <small>ק"מ</small></div>
+                  </div>
+                  <span class="ah-badge">יעד 20</span>
                 </div>
+                <div class="ah-bars">
+                  <i style="height:38%"></i><i class="cy" style="height:64%"></i><i style="height:28%"></i>
+                  <i class="cy" style="height:82%"></i><i class="cy" style="height:52%"></i><i class="cy" style="height:70%"></i>
+                  <i class="vi" style="height:96%"></i>
+                </div>
+                <div class="ah-bar-labels"><span>א</span><span>ב</span><span>ג</span><span>ד</span><span>ה</span><span>ו</span><span class="t">ש</span></div>
               </div>
             </div>
             <div class="scr-nav"><i class="on"></i><i></i><i></i><i></i></div>
