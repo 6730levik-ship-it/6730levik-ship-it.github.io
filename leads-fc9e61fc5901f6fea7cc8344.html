@@ -77,11 +77,12 @@
       let rows = '';
       leads.forEach((l,i) => {
         rows += '<tr><td class="num">' + (leads.length - i) + '</td>' +
+                '<td>' + escapeHtml(l.name || '—') + '</td>' +
                 '<td class="c">' + escapeHtml(l.contact) + '</td>' +
                 '<td>' + escapeHtml(fmt(l.created_at)) + '</td></tr>';
       });
       content.innerHTML =
-        '<table><thead><tr><th>#</th><th>אימייל / טלפון</th><th>מתי</th></tr></thead>' +
+        '<table><thead><tr><th>#</th><th>שם</th><th>טלפון</th><th>מתי</th></tr></thead>' +
         '<tbody>' + rows + '</tbody></table>';
     }catch(err){
       countEl.textContent = 'שגיאה';

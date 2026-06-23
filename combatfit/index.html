@@ -273,12 +273,13 @@
   }
   .lead-box h3{font-size:1.7rem;font-weight:900;margin-bottom:10px}
   .lead-box p{color:var(--frost);margin-bottom:24px}
-  .lead-form{display:flex;gap:10px;max-width:480px;margin:0 auto;flex-wrap:wrap}
+  .lead-form{display:flex;flex-direction:column;gap:10px;max-width:420px;margin:0 auto}
   .lead-form input{
-    flex:1;min-width:200px;padding:15px 18px;border-radius:13px;
+    width:100%;padding:15px 18px;border-radius:13px;
     background:rgba(5,8,15,.6);border:1.5px solid rgba(31,162,255,.3);
     color:var(--white);font-family:inherit;font-size:1rem;
   }
+  .lead-form .btn{width:100%}
   .lead-form input::placeholder{color:var(--frost-dim)}
   .lead-form input:focus{outline:none;border-color:var(--azure-bright);box-shadow:0 0 0 3px rgba(31,162,255,.15)}
   .lead-note{color:var(--frost-dim);font-size:.82rem;margin-top:14px}
@@ -522,7 +523,8 @@
         <h3>מוכן להתחיל? השאר פרטים 👇</h3>
         <p>השאר אימייל או טלפון, ונחזור אליך ברגע שנפתח את ההרשמה — כולל <b>הטבת מצטרפים ראשונים</b> ויום ניסיון על חשבוננו. בלי ספאם, מבטיחים.</p>
         <form class="lead-form" id="lead-form">
-          <input type="text" id="lead-input" placeholder="אימייל או מספר טלפון" required />
+          <input type="text" id="lead-name" placeholder="שם מלא" required autocomplete="name" />
+          <input type="tel" id="lead-input" placeholder="מספר טלפון" required autocomplete="tel" inputmode="tel" />
           <button class="btn btn-primary" type="submit">שלח לי</button>
         </form>
         <div class="lead-err" id="lead-err">משהו השתבש, נסה שוב בעוד רגע 🙏</div>
@@ -571,13 +573,16 @@
   const leadForm = document.getElementById('lead-form');
   leadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const input = document.getElementById('lead-input');
-    const btn   = leadForm.querySelector('button[type="submit"]');
-    const errEl = document.getElementById('lead-err');
-    const val   = input.value.trim();
+    const nameEl = document.getElementById('lead-name');
+    const input  = document.getElementById('lead-input');
+    const btn    = leadForm.querySelector('button[type="submit"]');
+    const errEl  = document.getElementById('lead-err');
+    const name   = nameEl.value.trim();
+    const val    = input.value.trim();
 
     errEl.style.display = 'none';
-    if(val.length < 3){ input.focus(); return; }
+    if(name.length < 2){ nameEl.focus(); return; }
+    if(val.replace(/\D/g,'').length < 6){ input.focus(); return; }
 
     btn.disabled = true;
     btn.textContent = 'שולח...';
@@ -591,7 +596,7 @@
           'Content-Type':'application/json',
           'Prefer':'return=minimal'
         },
-        body: JSON.stringify({ contact: val, source:'landing', user_agent: navigator.userAgent })
+        body: JSON.stringify({ name: name, contact: val, source:'landing', user_agent: navigator.userAgent })
       });
       if(!res.ok) throw new Error('HTTP '+res.status);
 
