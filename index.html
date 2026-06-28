@@ -60,6 +60,27 @@
   </head>
 
   <body>
+    <!-- boot-splash -->
+    <style>
+      #boot-splash{position:fixed;inset:0;z-index:99999;background:#525869;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .35s ease}
+      #boot-splash .bs-logo{width:88px;height:88px;border-radius:22px;background:#4FA0FF;display:flex;align-items:center;justify-content:center;font:800 42px system-ui,-apple-system,sans-serif;color:#fff;box-shadow:0 12px 34px rgba(79,160,255,.45)}
+      #boot-splash .bs-name{font:800 22px system-ui,-apple-system,sans-serif;color:#fff;letter-spacing:.5px}
+      #boot-splash .bs-spin{width:28px;height:28px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:bsspin .8s linear infinite}
+      @keyframes bsspin{to{transform:rotate(360deg)}}
+    </style>
+    <div id="boot-splash">
+      <div class="bs-logo">2</div>
+      <div class="bs-name">מצב 2</div>
+      <div class="bs-spin"></div>
+    </div>
+    <script>
+      (function(){
+        var killed=false;
+        function done(){if(killed)return;killed=true;var s=document.getElementById('boot-splash');if(!s)return;s.style.opacity='0';setTimeout(function(){if(s&&s.parentNode)s.parentNode.removeChild(s);},400);}
+        var iv=setInterval(function(){var r=document.getElementById('root');if(r&&r.childElementCount>0){clearInterval(iv);done();}},50);
+        setTimeout(function(){clearInterval(iv);done();},8000);
+      })();
+    </script>
     <!-- Use static rendering with Expo Router to support running without JavaScript. -->
     <noscript>
       You need to enable JavaScript to run this app.
