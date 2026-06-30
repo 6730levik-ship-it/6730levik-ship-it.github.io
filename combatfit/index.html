@@ -219,6 +219,9 @@
   }
   .feat h3{font-size:1.25rem;font-weight:800;margin-bottom:8px}
   .feat p{color:var(--frost-dim);font-size:.98rem}
+  .feat-tag{display:inline-block;margin-top:14px;background:rgba(31,162,255,.12);border:1px solid rgba(31,162,255,.3);color:var(--azure-bright);font-weight:800;font-size:.82rem;border-radius:100px;padding:6px 14px}
+  .feat-band{margin-top:18px;text-align:center;color:var(--frost);font-size:1rem;line-height:2;background:rgba(31,162,255,.05);border:1px solid rgba(31,162,255,.14);border-radius:16px;padding:18px 22px}
+  .feat-band b{color:var(--white)}
 
   /* ===== SAVINGS (the star section) ===== */
   .savings{background:
@@ -269,6 +272,20 @@
     background:rgba(0,0,0,.25);border-radius:12px;padding:10px 18px;font-weight:700;
   }
   .savings-punch .big b{color:var(--azure-bright)}
+  /* value stack */
+  .value-stack{max-width:620px;margin:40px auto 0;background:linear-gradient(160deg,rgba(31,162,255,.1),rgba(11,111,194,.05));border:1px solid rgba(31,162,255,.3);border-radius:22px;padding:30px 26px}
+  .value-stack h3{font-size:1.7rem;font-weight:900;text-align:center;margin-bottom:20px}
+  .value-stack h3 .hl{color:var(--azure-bright)}
+  .vs-list{list-style:none;display:flex;flex-direction:column;gap:2px}
+  .vs-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.07);font-size:1rem}
+  .vs-list li span{color:var(--frost)}
+  .vs-list li b{color:var(--frost-dim);font-weight:800;white-space:nowrap}
+  .vs-list .vs-total{border-bottom:none;margin-top:6px;border-top:1.5px solid rgba(31,162,255,.3);padding-top:14px}
+  .vs-list .vs-total span{color:var(--white);font-weight:800;font-size:1.05rem}
+  .vs-list .vs-total b{color:#ff8585;font-size:1.25rem}
+  .vs-result{text-align:center;margin-top:22px;font-size:1.2rem;color:var(--white);font-weight:700;line-height:1.5}
+  .vs-result b{color:var(--azure-bright);font-size:1.55rem}
+  .vs-result small{display:block;color:var(--frost-dim);font-size:.92rem;font-weight:500;margin-top:6px}
 
   /* ===== who ===== */
   .who-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:920px;margin:0 auto}
@@ -344,7 +361,7 @@
       <a class="lnk" href="#features">פיצ'רים</a>
       <a class="lnk" href="#savings">החיסכון</a>
       <a class="lnk" href="#pricing">מחירים</a>
-      <a class="btn btn-primary" href="#join">התחל יום חינם</a>
+      <a class="btn btn-primary" href="#join">הצטרף עכשיו</a>
     </div>
   </div>
 </nav>
@@ -358,12 +375,12 @@
         <h1>הכושר שתמיד רצית <span class="hl">מתחיל היום.</span></h1>
         <p class="sub">CombatFit לוקח שיטות אימון מוכחות והופך אותן לתוכנית פשוטה שמתאימה בדיוק לך. בלי ניסיון קודם, בלי ציוד מסובך — רק אתה וכמה דקות ביום.</p>
         <div class="hero-cta">
-          <a class="btn btn-primary btn-lg" href="#join">התחל יום חינם →</a>
+          <a class="btn btn-primary btn-lg" href="#join">התחל עכשיו →</a>
           <a class="btn btn-ghost btn-lg" href="#savings">כמה זה חוסך לי?</a>
         </div>
         <div class="hero-mini">
-          <span><i class="chk">✓</i> 24 שעות ניסיון חינם</span>
-          <span><i class="chk">✓</i> ביטול בקלות ביום הראשון</span>
+          <span><i class="chk">✓</i> אימון + תזונה + ריצה ביחד</span>
+          <span><i class="chk">✓</i> פחות מ‑₪3 ביום</span>
           <span><i class="chk">✓</i> בעברית, RTL מלא</span>
         </div>
       </div>
@@ -429,29 +446,36 @@
   <section class="sec" id="features">
     <div class="wrap">
       <div class="eyebrow">מה מקבלים</div>
-      <h2>הכל במקום <span class="hl">אחד.</span></h2>
-      <p class="lead">לא עוד שלוש אפליקציות שונות לאימון, לתזונה ולריצה. CombatFit מאחד הכל למסך אחד פשוט.</p>
+      <h2>כל מה שאתה צריך כדי להתאמן נכון — <span class="hl">במקום אחד.</span></h2>
+      <p class="lead">מאמן, תזונאי ושעון ריצה — בלי לשלם על כל אחד בנפרד ובלי לקפוץ בין אפליקציות. CombatFit עושה את הכל מהטלפון, בכל יום, צמוד אליך.</p>
       <div class="feat-grid">
         <div class="feat reveal">
           <div class="ic">🏋️</div>
           <h3>תוכנית אימון אישית</h3>
-          <p>אימוני כוח וסיבולת מובנים לפי הרמה שלך, עם התקדמות הדרגתית. אתה תמיד יודע מה לעשות היום.</p>
+          <p>אימוני כוח וסיבולת בנויים לפי הרמה שלך, עם התקדמות הדרגתית והוספת משקלים. אתה תמיד יודע בדיוק מה לעשות היום — בלי לנחש.</p>
+          <span class="feat-tag">מחליף מאמן אישי 💪</span>
         </div>
         <div class="feat reveal">
           <div class="ic">📸</div>
           <h3>מצלמת תזונה חכמה (AI)</h3>
-          <p>מצלמים את הצלחת — והבינה המלאכותית מזהה את האוכל ומחשבת קלוריות. בלי טבלאות, בלי לרשום ידנית.</p>
+          <p>מצלמים את הצלחת — והבינה המלאכותית מזהה את המנה ומחשבת קלוריות וערכים תזונתיים. בלי טבלאות, בלי לרשום, בלי לשקול.</p>
+          <span class="feat-tag">מחליף יועץ תזונה 🥗</span>
         </div>
         <div class="feat reveal">
           <div class="ic">🏃</div>
-          <h3>מעקב ריצות וכושר</h3>
-          <p>כל ריצה נמדדת ונשמרת. רואים שחור על גבי לבן איך הזמנים והמרחקים שלך משתפרים שבוע אחרי שבוע.</p>
+          <h3>מעקב ריצות GPS</h3>
+          <p>כל ריצה נמדדת אוטומטית — מרחק, זמן וקצב. רואים שחור על לבן איך אתה משתפר שבוע אחרי שבוע, עם יעדים שבועיים שמחזיקים אותך.</p>
+          <span class="feat-tag">מחליף שעון ריצה ⌚</span>
         </div>
         <div class="feat reveal">
           <div class="ic">📉</div>
-          <h3>גרף משקל והתקדמות</h3>
-          <p>עוקבים אחרי המשקל לאורך זמן ורואים את הקו יורד. נתונים אמיתיים שנותנים לך כוח להמשיך.</p>
+          <h3>מעקב משקל והתקדמות</h3>
+          <p>גרף משקל, רצף ימים וסטטיסטיקות אמיתיות במסך אחד. אתה לא מתאמן באוויר — אתה רואה את התוצאות ומקבל כוח להמשיך.</p>
+          <span class="feat-tag">נתונים שמניעים אותך 📊</span>
         </div>
+      </div>
+      <div class="feat-band reveal">
+        ⚡ <b>תזכורות יומיות</b> שלא נותנות לך לוותר &nbsp;·&nbsp; 🏆 <b>בוחני צוות</b> ואתגרים &nbsp;·&nbsp; 🤖 <b>מאמן AI</b> שבונה לך תוכנית &nbsp;·&nbsp; ☁️ הכל <b>נשמר בענן</b> ומסונכרן
       </div>
     </div>
   </section>
@@ -481,7 +505,7 @@
 
         <div class="card-cmp card-new reveal">
           <div class="tag">CombatFit</div>
-          <div class="price">₪69.90<small> / חודש</small></div>
+          <div class="price">₪89<small> / חודש</small></div>
           <div class="price-note">אימון + תזונה + ריצה · 24/7</div>
           <ul class="cmp-list">
             <li><span class="v2">✓</span> תוכנית אימון מלאה</li>
@@ -493,10 +517,22 @@
         </div>
       </div>
 
+      <div class="value-stack reveal">
+        <h3>כמה היית משלם על כל זה <span class="hl">בנפרד?</span></h3>
+        <ul class="vs-list">
+          <li><span>👤 מאמן אישי (8 אימונים בחודש)</span><b>₪1,200+</b></li>
+          <li><span>🥗 ייעוץ תזונה</span><b>₪300+</b></li>
+          <li><span>⌚ אפליקציית / שעון ריצה</span><b>₪40</b></li>
+          <li><span>📊 מעקב והכוונה אישית</span><b>אין מחיר</b></li>
+          <li class="vs-total"><span>הכל ביחד, בחודש</span><b>₪1,540+</b></li>
+        </ul>
+        <div class="vs-result">ב‑CombatFit הכל ביחד — <b>₪89 לחודש בלבד.</b><br><small>פחות מ‑6% מהעלות, וזה איתך כל יום.</small></div>
+      </div>
+
       <div class="savings-punch reveal">
         <h3>על אימון <span class="hl">אחד</span> אצל מאמן — אתה מקבל <span class="hl">חודש שלם</span> אצלנו.</h3>
-        <p>ועדיין נשאר לך כסף. אתה לא משלם על שעה — אתה משלם על תוצאה שממשיכה כל יום.</p>
-        <div class="big">אימון בודד ₪150–250 &nbsp;·&nbsp; <b>חודש מלא של CombatFit ₪69.90</b></div>
+        <p>אתה לא משלם על שעה אחת — אתה משלם על תוצאה שממשיכה כל יום בחודש.</p>
+        <div class="big">אימון בודד אצל מאמן ₪150–250 &nbsp;·&nbsp; <b>חודש מלא של CombatFit ₪89</b></div>
       </div>
     </div>
   </section>
@@ -520,36 +556,36 @@
   <section class="sec" id="pricing">
     <div class="wrap">
       <div class="eyebrow">מחירים</div>
-      <h2>יום ראשון חינם. <span class="hl">אחר כך ממשיכים אוטומטית.</span></h2>
-      <p class="lead">בוחרים מסלול, מזינים פרטי תשלום, ומקבלים <b>24 שעות ניסיון חינם</b>. אם זה מתאים לך — המנוי ממשיך אוטומטית. לא מתאים? מבטלים בקלות במהלך היום הראשון, בלי חיוב.</p>
+      <h2>מנוי אחד. <span class="hl">הכל כלול.</span></h2>
+      <p class="lead">בלי תוספות נסתרות ובלי כמה מנויים נפרדים. מסלול אחד שכולל את <b>הכל</b> — אימון, תזונה, ריצה ומעקב — בפחות מ‑₪3 ביום.</p>
       <div class="price-grid">
         <div class="plan reveal">
           <h4>חודשי</h4>
-          <div class="amt">₪69.90<small> / חודש</small></div>
-          <div class="save-tag">יום ראשון חינם · פחות מחצי ממחיר אימון בודד</div>
+          <div class="amt">₪89<small> / חודש</small></div>
+          <div class="save-tag">פחות מחצי ממחיר אימון בודד אצל מאמן</div>
           <ul>
             <li><span class="v2">✓</span> תוכנית אימון מלאה</li>
             <li><span class="v2">✓</span> מצלמת תזונה AI</li>
             <li><span class="v2">✓</span> מעקב ריצות ומשקל</li>
             <li><span class="v2">✓</span> תזכורות יומיות</li>
           </ul>
-          <a class="btn btn-ghost" href="#join">התחל יום חינם</a>
+          <a class="btn btn-ghost" href="#join">התחל עכשיו</a>
         </div>
         <div class="plan best reveal">
-          <div class="ribbon">⭐ הכי משתלם — כמעט חודשיים מתנה</div>
+          <div class="ribbon">⭐ הכי משתלם — חודשיים מתנה</div>
           <h4>שנתי</h4>
-          <div class="amt">₪738.90<small> / שנה</small></div>
-          <div class="save-tag">יום ראשון חינם · ≈ ₪61.50 לחודש בלבד</div>
+          <div class="amt">₪890<small> / שנה</small></div>
+          <div class="save-tag">≈ ₪74 לחודש בלבד</div>
           <ul>
             <li><span class="v2">✓</span> כל מה שבחודשי</li>
-            <li><span class="v2">✓</span> חיסכון של כמעט חודשיים</li>
+            <li><span class="v2">✓</span> חיסכון של חודשיים מלאים (₪178)</li>
             <li><span class="v2">✓</span> מחיר נעול לכל השנה</li>
             <li><span class="v2">✓</span> עדיפות לתכנים חדשים</li>
           </ul>
-          <a class="btn btn-primary" href="#join">התחל יום חינם</a>
+          <a class="btn btn-primary" href="#join">התחל עכשיו</a>
         </div>
       </div>
-      <p class="free-note">🔓 כל מסלול מתחיל ב‑<b>24 שעות ניסיון חינם</b>. החיוב הראשון מתבצע רק כעבור יום — וניתן לבטל לפני כן בלי לשלם שקל.</p>
+      <p class="free-note">💳 ביטול בכל עת. בלי התחייבות לטווח ארוך — אתה נשאר כי זה עובד, לא כי אתה חייב.</p>
     </div>
   </section>
 
@@ -558,7 +594,7 @@
     <div class="wrap">
       <div class="lead-box reveal">
         <h3>מוכן להתחיל? השאר פרטים 👇</h3>
-        <p>השאר אימייל או טלפון, ונחזור אליך ברגע שנפתח את ההרשמה — כולל <b>הטבת מצטרפים ראשונים</b> ויום ניסיון על חשבוננו. בלי ספאם, מבטיחים.</p>
+        <p>השאר שם וטלפון, ונחזור אליך ברגע שנפתח את ההרשמה — כולל <b>הטבת מצטרפים ראשונים</b>. בלי ספאם, מבטיחים.</p>
         <form class="lead-form" id="lead-form">
           <input type="text" id="lead-name" placeholder="שם מלא" required autocomplete="name" />
           <input type="tel" id="lead-input" placeholder="מספר טלפון" required autocomplete="tel" inputmode="tel" />
@@ -575,8 +611,8 @@
   <section class="final">
     <div class="wrap">
       <h2>הצעד הראשון הוא הכי קשה.<br><span class="hl">אנחנו כאן בשביל כל השאר.</span></h2>
-      <p>הצטרף ל-CombatFit ותגלה כמה רחוק אתה באמת יכול להגיע. היום הראשון עלינו.</p>
-      <a class="btn btn-primary btn-lg" href="#join">התחל יום חינם – עכשיו</a>
+      <p>הצטרף ל-CombatFit ותגלה כמה רחוק אתה באמת יכול להגיע.</p>
+      <a class="btn btn-primary btn-lg" href="#join">אני רוצה להתחיל</a>
     </div>
   </section>
 </main>
