@@ -65,6 +65,11 @@
     content.innerHTML = '<div class="state">טוען נתונים…</div>';
     try{
       const res = await fetch(FN + '?token=' + encodeURIComponent(TOKEN));
+      if(res.status === 401){
+        countEl.textContent = '🔒 קישור לא תקין';
+        content.innerHTML = '<div class="state err">הטוקן בקישור שגוי או חסר.<br>פתח את הקישור הפרטי <b>המלא</b> שקיבלת — כולל כל הטוקן עד הסוף.</div>';
+        return;
+      }
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       const leads = data.leads || [];
