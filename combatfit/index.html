@@ -113,6 +113,20 @@
   .hero-mini{margin-top:18px;color:var(--frost-dim);font-size:.9rem;display:flex;gap:18px;flex-wrap:wrap}
   @media(max-width:880px){.hero-mini{justify-content:center}}
   .hero-mini span{display:flex;align-items:center;gap:6px}
+  .price-pop-wrap{margin-top:18px}
+  @media(max-width:880px){.price-pop-wrap{text-align:center}}
+  .price-pop{
+    display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,rgba(51,194,255,.24),rgba(11,111,194,.12));
+    border:1.5px solid rgba(51,194,255,.65);color:#fff;font-weight:800;font-size:1.05rem;
+    padding:10px 20px;border-radius:100px;box-shadow:0 0 22px rgba(51,194,255,.45);
+    animation:pricePulse 2.2s ease-in-out infinite;
+  }
+  .price-pop b{color:var(--azure-bright);font-size:1.28rem;font-weight:900;letter-spacing:-.3px}
+  @keyframes pricePulse{
+    0%,100%{box-shadow:0 0 14px rgba(51,194,255,.32);transform:scale(1)}
+    50%{box-shadow:0 0 32px rgba(51,194,255,.7);transform:scale(1.035)}
+  }
   .chk{color:var(--azure-bright);font-weight:900}
 
   /* ===== phone mockup ===== */
@@ -378,9 +392,11 @@
           <a class="btn btn-primary btn-lg" href="#join">התחל עכשיו →</a>
           <a class="btn btn-ghost btn-lg" href="#savings">כמה זה חוסך לי?</a>
         </div>
+        <div class="price-pop-wrap">
+          <span class="price-pop">💸 הכל ביחד ב‑<b>פחות מ‑₪3 ליום</b></span>
+        </div>
         <div class="hero-mini">
           <span><i class="chk">✓</i> אימון + תזונה + ריצה ביחד</span>
-          <span><i class="chk">✓</i> פחות מ‑₪3 ביום</span>
           <span><i class="chk">✓</i> בעברית, RTL מלא</span>
         </div>
       </div>
