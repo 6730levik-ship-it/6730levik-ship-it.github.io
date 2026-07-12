@@ -27,11 +27,15 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#4FA0FF" />
     <style>
-      html,#root{background-color:#525869;}
-      /* The page bg must look IDENTICAL to the app's Screen (slate + the same
-         faint gym-photo wallpaper), so the bottom safe-area strip reads as a
-         seamless continuation of the screen rather than a flat grey band. */
-      body{background:linear-gradient(rgba(82,88,105,0.87),rgba(82,88,105,0.87)),url('https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=1200&q=60&auto=format&fit=crop') center/cover no-repeat fixed #525869;}
+      /* The page CANVAS (what iOS paints in the safe areas, incl. the bottom
+         home-indicator chin) takes the HTML element's background — so the
+         Screen-matching wallpaper (slate + faint gym photo) must live on HTML,
+         with body transparent, or iOS shows a flat grey band down there. */
+      html{background:linear-gradient(rgba(82,88,105,0.87),rgba(82,88,105,0.87)),url('https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=1200&q=60&auto=format&fit=crop') center/cover no-repeat #525869;}
+      body{background:transparent;}
+      /* And stretch the app itself into the safe areas so its own Screen paints
+         edge-to-edge where supported (dvh covers the full dynamic viewport). */
+      #root{background-color:#525869;min-height:100dvh;}
     </style>
     <meta name="application-name" content="מצב 2" />
     <meta name="mobile-web-app-capable" content="yes" />
