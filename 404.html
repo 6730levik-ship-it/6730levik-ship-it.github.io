@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="he">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover" />
+    <title>מצב 2</title>
+    <!-- The `react-native-web` recommended style reset: https://necolas.github.io/react-native-web/docs/setup/#root-element -->
+    <style id="expo-reset">
+      /* These styles make the body full-height */
+      html,
+      body {
+        height: 100%;
+      }
+      /* These styles disable body scrolling if you are using <ScrollView> */
+      body {
+        overflow: hidden;
+      }
+      /* These styles make the root element full-height */
+      #root {
+        display: flex;
+        height: 100%;
+        flex: 1;
+      }
+    </style>
+  <link rel="icon" href="/favicon.ico" />    <!-- pwa:injected -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4FA0FF" />
+    <style>
+      /* The page CANVAS (what iOS paints in the safe areas, incl. the bottom
+         home-indicator chin) takes the HTML element's background — so the
+         Screen-matching wallpaper (slate + faint gym photo) must live on HTML,
+         with body transparent, or iOS shows a flat grey band down there. */
+      html{background:linear-gradient(rgba(82,88,105,0.87),rgba(82,88,105,0.87)),url('https://images.unsplash.com/photo-1540497077202-7c8a3999166f?w=1200&q=60&auto=format&fit=crop') center/cover no-repeat #525869;}
+      body{background:transparent;}
+      /* And stretch the app itself into the safe areas so its own Screen paints
+         edge-to-edge where supported (dvh covers the full dynamic viewport). */
+      #root{background-color:#525869;min-height:100dvh;}
+    </style>
+    <meta name="application-name" content="מצב 2" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="מצב 2" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').then(function (reg) {
+            reg.addEventListener('updatefound', function () {
+              var sw = reg.installing;
+              if (!sw) return;
+              sw.addEventListener('statechange', function () {
+                if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                  sw.postMessage('SKIP_WAITING');
+                }
+              });
+            });
+          }).catch(function () {});
+          var reloading = false;
+          navigator.serviceWorker.addEventListener('controllerchange', function () {
+            if (reloading) return;
+            reloading = true;
+            window.location.reload();
+          });
+        });
+      }
+    </script>
+  </head>
+
+  <body>
+    <!-- boot-splash -->
+    <style>
+      #boot-splash{position:fixed;inset:0;z-index:99999;background:#525869;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity .35s ease}
+      #boot-splash .bs-logo{width:88px;height:88px;border-radius:22px;background:#4FA0FF;display:flex;align-items:center;justify-content:center;font:800 42px system-ui,-apple-system,sans-serif;color:#fff;box-shadow:0 12px 34px rgba(79,160,255,.45)}
+      #boot-splash .bs-name{font:800 22px system-ui,-apple-system,sans-serif;color:#fff;letter-spacing:.5px}
+      #boot-splash .bs-spin{width:28px;height:28px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;animation:bsspin .8s linear infinite}
+      @keyframes bsspin{to{transform:rotate(360deg)}}
+    </style>
+    <div id="boot-splash">
+      <div class="bs-logo">2</div>
+      <div class="bs-name">מצב 2</div>
+      <div class="bs-spin"></div>
+    </div>
+    <script>
+      (function(){
+        var killed=false;
+        function done(){if(killed)return;killed=true;var s=document.getElementById('boot-splash');if(!s)return;s.style.opacity='0';setTimeout(function(){if(s&&s.parentNode)s.parentNode.removeChild(s);},400);}
+        var iv=setInterval(function(){var r=document.getElementById('root');if(r&&r.childElementCount>0){clearInterval(iv);done();}},50);
+        setTimeout(function(){clearInterval(iv);done();},8000);
+      })();
+    </script>
+    <!-- Use static rendering with Expo Router to support running without JavaScript. -->
+    <noscript>
+      You need to enable JavaScript to run this app.
+    </noscript>
+    <!-- The root element for your Expo app. -->
+    <div id="root"></div>
+  <script src="/_expo/static/js/web/index-09d33861db6541abcb62230bfbe4955c.js" defer></script>
+</body>
+</html>
