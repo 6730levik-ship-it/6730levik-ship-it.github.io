@@ -5,278 +5,381 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>שולחן מחקר מניות — פרומפט, צ'קליסט ויומן</title>
 <meta name="description" content="כלי עבודה למחקר מניות: בוחרים מצב, מקבלים פרומפט מוכן ל-Claude, עוברים צ'קליסט אימות ושומרים תזה ביומן המחקר. הכל נשמר במכשיר שלך." />
-<meta name="theme-color" content="#0A0F1A" />
+<meta name="theme-color" content="#060e20" />
 <link rel="icon" href="/favicon.ico" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --azure:#1FA2FF; --azure-bright:#33C2FF; --azure-deep:#0B6FC2;
-    --bg:#0A0F1A; --surface:#0E1626; --surface-2:#111C30; --raised:#16243C;
-    --line:rgba(31,162,255,.16); --line-strong:rgba(31,162,255,.34);
-    --ink:#F4F8FE; --frost:#C9D7E8; --dim:#8499B2;
-    --warn:#FFC46B; --good:#5BD6A0; --bad:#FF8A8A;
-    --r:16px;
+    /* surfaces */
+    --bg:#0b1326; --surf-lowest:#060e20; --surf-low:#131b2e; --surf:#171f33;
+    --surf-high:#222a3d; --surf-highest:#2d3449; --surf-bright:#31394d;
+    /* accents */
+    --primary:#b4c5ff; --primary-container:#2563eb; --on-primary-container:#eeefff; --on-primary:#002a78;
+    --secondary:#c0c1ff; --secondary-container:#3131c0;
+    --tertiary:#45dfa4; --tertiary-dim:#68fcbf; --on-tertiary-container:#bdffdc;
+    --error:#ffb4ab; --error-container:#93000a; --on-error-container:#ffdad6;
+    /* text + lines */
+    --on-surface:#dae2fd; --on-surface-variant:#c3c6d7; --outline:#8d90a0; --outline-variant:#434655;
+    --line:rgba(67,70,85,.6); --line-soft:rgba(67,70,85,.35);
+    /* type */
+    --f-display:'Space Grotesk','Heebo',system-ui,-apple-system,sans-serif;
+    --f-body:'Heebo',system-ui,-apple-system,sans-serif;
+    --f-mono:'JetBrains Mono','Heebo',ui-monospace,SFMono-Regular,monospace;
+    /* shape */
+    --r-card:12px; --r:8px; --r-sm:6px;
   }
   *{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth;background:var(--bg)}
   body{
-    font-family:'Heebo',"Assistant",system-ui,-apple-system,sans-serif;
-    background:var(--bg);color:var(--ink);line-height:1.6;
-    -webkit-font-smoothing:antialiased;min-height:100dvh;
+    font-family:var(--f-body);background:var(--bg);color:var(--on-surface);
+    font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;
+    min-height:100dvh;overscroll-behavior-y:none;
   }
+  /* ambient coordinate backdrop — the canvas grid, quiet */
   body::before{
-    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
-    background:
-      radial-gradient(900px 500px at 85% -8%, rgba(31,162,255,.15), transparent 60%),
-      radial-gradient(700px 500px at 0% 20%, rgba(11,111,194,.10), transparent 60%);
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.4;
+    background-image:radial-gradient(var(--surf-highest) 1.5px,transparent 1.5px);
+    background-size:24px 24px;
   }
-  .wrap{max-width:900px;margin:0 auto;padding:0 18px;position:relative;z-index:1}
-  a{color:var(--azure-bright);text-decoration:none}
+  body::after{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(700px 420px at 88% -6%,rgba(37,99,235,.16),transparent 62%);
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 12px;position:relative;z-index:1}
+  a{color:var(--primary);text-decoration:none}
   button{font:inherit;cursor:pointer}
   input,textarea,select{font:inherit}
-  h1,h2,h3{line-height:1.22;letter-spacing:-.3px}
+  h1,h2,h3{font-family:var(--f-display);line-height:1.2;letter-spacing:-.02em;font-weight:600}
+  .mono{font-family:var(--f-mono)}
+  .caps{
+    font-family:var(--f-mono);font-size:10px;line-height:14px;font-weight:600;
+    letter-spacing:.06em;text-transform:uppercase
+  }
   .ltr{direction:ltr;text-align:right;unicode-bidi:isolate}
+  svg.ic{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
-  /* ===== top bar ===== */
+  /* ══════════ top bar ══════════ */
   .topbar{
-    position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);
-    background:rgba(10,15,26,.86);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:60;padding-top:env(safe-area-inset-top,0px);
+    background:rgba(6,14,32,.85);backdrop-filter:blur(20px);
+    box-shadow:0 1px 8px rgba(0,0,0,.4)
   }
-  .topbar .wrap{display:flex;align-items:center;gap:12px;height:60px}
-  .brand{display:flex;align-items:center;gap:9px;font-weight:900;font-size:1.05rem;white-space:nowrap}
+  .topbar .wrap{display:flex;align-items:center;gap:10px;height:60px}
+  .brand{display:flex;align-items:center;gap:9px;min-width:0}
   .brand .mark{
-    width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
-    background:linear-gradient(135deg,var(--azure-bright),var(--azure-deep));
-    color:#fff;font-weight:900;font-size:.95rem;box-shadow:0 6px 18px rgba(31,162,255,.35)
+    width:32px;height:32px;flex:0 0 32px;border-radius:var(--r);display:grid;place-items:center;
+    background:linear-gradient(45deg,var(--primary-container),var(--primary) 60%,var(--tertiary));
+    color:var(--surf-lowest);font-family:var(--f-display);font-weight:700;font-size:15px;
+    box-shadow:0 0 12px rgba(37,99,235,.4)
   }
-  .tabs{display:flex;gap:6px;margin-inline-start:auto;overflow-x:auto;scrollbar-width:none}
-  .tabs::-webkit-scrollbar{display:none}
+  .brand .txt{display:flex;flex-direction:column;min-width:0;line-height:1.15}
+  .brand .name{font-family:var(--f-display);font-size:16px;font-weight:600;letter-spacing:-.01em}
+  .brand .sub{color:var(--tertiary)}
+  .tabs{display:flex;gap:4px;margin-inline-start:auto;flex-shrink:0}
   .tab{
-    background:transparent;border:1px solid transparent;border-radius:999px;
-    color:var(--dim);font-weight:700;font-size:.9rem;padding:7px 13px;white-space:nowrap;
-    transition:.18s background,.18s color,.18s border-color;
+    background:transparent;border:none;border-radius:var(--r);color:var(--on-surface-variant);
+    font-size:13px;font-weight:600;padding:7px 11px;white-space:nowrap;transition:.18s
   }
-  .tab:hover{color:var(--frost);background:rgba(255,255,255,.05)}
-  .tab[aria-selected="true"]{color:#fff;background:rgba(31,162,255,.16);border-color:var(--line-strong)}
+  .tab:hover{color:var(--on-surface);background:rgba(255,255,255,.05)}
+  .tab[aria-selected="true"]{color:var(--primary);background:rgba(180,197,255,.12)}
   .tab .badge{
-    display:inline-block;min-width:19px;padding:0 5px;margin-inline-start:5px;border-radius:999px;
-    background:var(--azure);color:#04121f;font-size:.74rem;font-weight:900;line-height:19px;text-align:center
+    display:inline-block;min-width:18px;padding:0 5px;margin-inline-start:5px;border-radius:999px;
+    background:var(--primary-container);color:var(--on-primary-container);
+    font-family:var(--f-mono);font-size:10px;font-weight:600;line-height:18px;text-align:center
   }
   .tab .badge[hidden]{display:none}
 
-  /* ===== screens ===== */
-  .screen{display:none;padding:26px 0 90px}
-  .screen.active{display:block;animation:fade .25s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-  .eyebrow{
-    display:inline-block;font-size:.78rem;font-weight:800;letter-spacing:.07em;color:var(--azure-bright);
-    background:rgba(31,162,255,.1);border:1px solid var(--line-strong);border-radius:999px;padding:5px 12px;margin-bottom:14px
+  /* ══════════ HUD strip ══════════ */
+  .hud{
+    position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;
+    gap:8px;padding:10px 12px 2px;max-width:880px;margin:0 auto
   }
-  h1{font-size:clamp(1.6rem,4.6vw,2.3rem);font-weight:900}
-  .lede{color:var(--frost);margin-top:10px;max-width:60ch;font-size:1.02rem}
-  .section-title{font-size:1.05rem;font-weight:800;margin:30px 0 12px;display:flex;align-items:center;gap:9px}
+  .hud .pill{
+    display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+    background:var(--surf-high);color:var(--tertiary);font-family:var(--f-mono);font-size:11px;font-weight:500
+  }
+  .hud .dot{width:6px;height:6px;border-radius:999px;background:var(--tertiary);flex:0 0 6px}
+  .hud .dot.live{animation:ping 1.8s cubic-bezier(0,0,.2,1) infinite}
+  @keyframes ping{0%{transform:scale(1);opacity:1}70%{transform:scale(2);opacity:0}100%{opacity:0}}
+  .hud .right{font-family:var(--f-mono);font-size:11px;color:var(--on-surface-variant);text-align:end}
+
+  /* ══════════ screens ══════════ */
+  .screen{display:none;padding:14px 0 90px}
+  .screen.active{display:block;animation:rise .24s ease}
+  #screen-tool.active{padding-bottom:120px}
+  @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  h1{font-size:32px;line-height:40px;letter-spacing:-.02em}
+  .lede{color:var(--on-surface-variant);margin-top:8px;max-width:58ch;font-size:15px}
+  .section-title{
+    font-size:16px;line-height:24px;font-weight:600;margin:26px 0 8px;
+    display:flex;align-items:center;gap:8px
+  }
   .section-title .n{
-    width:22px;height:22px;border-radius:7px;background:rgba(31,162,255,.16);color:var(--azure-bright);
-    display:grid;place-items:center;font-size:.78rem;font-weight:900
+    width:20px;height:20px;border-radius:var(--r-sm);background:rgba(37,99,235,.22);color:var(--primary);
+    display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;font-weight:600
   }
-  .hint{color:var(--dim);font-size:.88rem;margin-top:-4px;margin-bottom:12px}
+  .hint{color:var(--outline);font-size:13px;margin:0 0 10px}
 
-  /* ===== situation list ===== */
-  .sits{display:grid;gap:10px;margin-top:18px}
-  .sit{
-    display:flex;align-items:center;gap:13px;text-align:right;width:100%;
-    background:linear-gradient(180deg,var(--surface),var(--surface-2));
-    border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;color:var(--ink);
-    transition:.2s transform,.2s border-color,.2s background;
-  }
-  .sit:hover{transform:translateY(-2px);border-color:var(--line-strong);background:var(--raised)}
-  .sit .ico{
-    width:38px;height:38px;flex:0 0 38px;border-radius:11px;display:grid;place-items:center;
-    background:rgba(31,162,255,.12);font-size:1.15rem
-  }
-  .sit .txt{flex:1;min-width:0}
-  .sit .t{font-weight:800;font-size:1rem}
-  .sit .s{color:var(--dim);font-size:.86rem}
-  .sit .arrow{color:var(--azure-bright);font-weight:900;flex:0 0 auto}
-
-  /* ===== generic card ===== */
+  /* ══════════ cards / nodes ══════════ */
   .card{
-    background:linear-gradient(180deg,var(--surface),var(--surface-2));
-    border:1px solid var(--line);border-radius:var(--r);padding:18px
+    background:rgba(23,31,51,.85);backdrop-filter:blur(20px);
+    border-radius:var(--r-card);padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.35);
+    position:relative;overflow:hidden
   }
-  .card + .card{margin-top:12px}
-  .rules{margin-top:26px}
-  .rules ul{margin:8px 0 0;padding-inline-start:20px;display:grid;gap:7px}
-  .rules li{color:var(--frost);font-size:.94rem}
-  .rules b{color:var(--ink)}
+  .card + .card{margin-top:10px}
+  .node::before{
+    content:"";position:absolute;top:0;inset-inline:0;height:2px;opacity:.75;
+    background:linear-gradient(90deg,var(--tertiary),var(--primary-container),transparent)
+  }
+  .rules{margin-top:22px}
+  .rules ul{margin:6px 0 0;padding-inline-start:18px;display:grid;gap:6px}
+  .rules li{color:var(--on-surface-variant);font-size:14px}
+  .rules b{color:var(--on-surface);font-weight:700}
 
-  /* ===== tool screen ===== */
+  /* ══════════ situation nodes ══════════ */
+  .sits{display:grid;gap:10px;margin-top:16px}
+  .sit{
+    display:flex;align-items:center;gap:12px;text-align:right;width:100%;color:var(--on-surface);
+    background:rgba(23,31,51,.85);backdrop-filter:blur(20px);border:1px solid var(--line-soft);
+    border-radius:var(--r-card);padding:13px 14px;box-shadow:0 4px 16px rgba(0,0,0,.3);
+    transition:.2s transform,.2s border-color,.2s box-shadow
+  }
+  .sit:hover{transform:translateY(-2px);border-color:rgba(37,99,235,.5);box-shadow:0 0 20px rgba(37,99,235,.18)}
+  .sit:active{transform:scale(.99)}
+  .sit .ico{
+    width:38px;height:38px;flex:0 0 38px;border-radius:var(--r);display:grid;place-items:center;
+    background:var(--surf-high);color:var(--primary)
+  }
+  .sit .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .sit .t{font-family:var(--f-display);font-size:16px;font-weight:600;line-height:1.25}
+  .sit .s{color:var(--on-surface-variant);font-size:13px;line-height:1.35}
+  .sit .id{color:var(--outline)}
+  .sit .arrow{color:var(--primary);flex:0 0 auto;opacity:.8}
+
+  /* ══════════ tool screen ══════════ */
   .back{
-    background:none;border:none;color:var(--azure-bright);font-weight:800;font-size:.95rem;
-    padding:0 0 12px;display:inline-flex;align-items:center;gap:6px
+    background:none;border:none;color:var(--primary);font-weight:600;font-size:14px;
+    padding:0 0 10px;display:inline-flex;align-items:center;gap:6px
   }
-  .tool-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+  .tool-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding-bottom:2px}
+  .tool-id{display:flex;align-items:center;gap:8px;min-width:0}
   .num{
-    font-variant-numeric:tabular-nums;font-weight:900;font-size:.85rem;color:var(--azure-bright);
-    background:rgba(31,162,255,.12);border-radius:8px;padding:3px 9px
+    font-family:var(--f-mono);font-size:11px;font-weight:600;color:var(--primary);
+    background:rgba(37,99,235,.2);border-radius:var(--r-sm);padding:2px 7px
   }
-  .tag{font-size:.76rem;font-weight:800;color:var(--dim);letter-spacing:.02em}
-  .tool-name{font-size:1.6rem;font-weight:900;direction:ltr;text-align:right}
-  .tool-tagline{color:var(--azure-bright);font-weight:700}
-  .tool-desc{color:var(--frost);margin-top:8px}
-  .meta{display:grid;gap:9px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-  .meta dt{font-size:.78rem;font-weight:800;color:var(--dim)}
-  .meta dd{font-size:.93rem;color:#D5DBE6}
-  .meta .warn dd{color:var(--warn)}
+  .tag{color:var(--outline)}
+  .chip-live{
+    display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;
+    background:rgba(69,223,164,.15);color:var(--tertiary)
+  }
+  .tool-name{font-family:var(--f-display);font-size:24px;line-height:32px;font-weight:600;direction:ltr;text-align:right;margin-top:6px}
+  .tool-tagline{color:var(--tertiary);font-weight:600;font-size:14px}
+  .tool-desc{color:var(--on-surface-variant);margin-top:6px;font-size:14px}
+  .meta{display:grid;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)}
+  .meta dt{font-size:11.5px;font-weight:700;color:var(--outline)}
+  .meta dd{font-size:14px;color:var(--on-surface-variant)}
+  .meta .warn dd{color:var(--tertiary-dim)}
 
-  /* ===== form ===== */
-  .fields{display:grid;gap:13px}
-  .field label{display:block;font-size:.86rem;font-weight:800;color:var(--frost);margin-bottom:5px}
-  .field .sub{font-weight:500;color:var(--dim);font-size:.8rem}
+  /* ══════════ form ══════════ */
+  .fields{display:grid;gap:12px}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--on-surface);margin-bottom:5px}
+  .field .sub{font-weight:400;color:var(--outline);font-size:12px}
   .field input,.field textarea,.field select{
-    width:100%;background:#0A1322;border:1px solid var(--line);border-radius:11px;
-    color:var(--ink);padding:11px 13px;font-size:.98rem;transition:.18s border-color,.18s box-shadow
+    width:100%;background:var(--surf-lowest);border:1px solid var(--line);border-radius:var(--r);
+    color:var(--on-surface);padding:10px 12px;font-size:15px;transition:.16s
   }
-  .field textarea{min-height:74px;resize:vertical;line-height:1.55}
+  .field textarea{min-height:72px;resize:vertical;line-height:1.55}
   .field input:focus,.field textarea:focus,.field select:focus{
-    outline:none;border-color:var(--azure);box-shadow:0 0 0 3px rgba(31,162,255,.16)
+    outline:none;border-color:var(--primary-container);box-shadow:0 0 0 3px rgba(37,99,235,.22)
   }
-  .field input::placeholder,.field textarea::placeholder{color:#5C6B84}
-  .field select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);
-    background-position:calc(14px) calc(50% - 2px),calc(19px) calc(50% - 2px);background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+  .field input::placeholder,.field textarea::placeholder{color:#5c6880}
+  .field select{
+    appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--outline) 50%),linear-gradient(135deg,var(--outline) 50%,transparent 50%);
+    background-position:14px calc(50% - 2px),19px calc(50% - 2px);background-size:5px 5px,5px 5px;background-repeat:no-repeat
+  }
 
-  /* ===== prompt ===== */
+  /* ══════════ prompt inspector ══════════ */
+  .code-head{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding-bottom:8px;color:var(--outline)
+  }
+  .code-head .file{color:var(--tertiary)}
   .prompt-box{
-    background:#070D18;border:1px solid var(--line);border-radius:12px;padding:14px;
-    max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;
-    font-size:.9rem;line-height:1.65;color:#D9E3F2
+    background:var(--surf-lowest);border:1px solid var(--line-soft);border-radius:var(--r);padding:12px;
+    max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+    font-family:var(--f-mono);font-size:13px;line-height:1.7;color:var(--on-surface)
   }
-  .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
   .btn{
-    display:inline-flex;align-items:center;gap:7px;justify-content:center;font-weight:800;font-size:.94rem;
-    border:none;border-radius:12px;padding:12px 18px;transition:.2s transform,.2s box-shadow,.2s background
+    display:inline-flex;align-items:center;gap:6px;justify-content:center;font-weight:600;font-size:14px;
+    border:none;border-radius:var(--r);padding:11px 16px;min-height:44px;transition:.18s
   }
-  .btn:active{transform:translateY(1px)}
-  .btn-primary{background:linear-gradient(135deg,var(--azure-bright),var(--azure-deep));color:#fff;box-shadow:0 10px 26px rgba(31,162,255,.28)}
-  .btn-primary:hover{box-shadow:0 12px 32px rgba(51,194,255,.42)}
-  .btn-ghost{background:rgba(31,162,255,.09);color:var(--ink);border:1.5px solid var(--line-strong)}
-  .btn-ghost:hover{background:rgba(31,162,255,.16)}
-  .btn-quiet{background:rgba(255,255,255,.05);color:var(--frost);border:1px solid var(--line)}
-  .btn-quiet:hover{background:rgba(255,255,255,.09)}
-  .btn-danger{background:rgba(255,138,138,.1);color:var(--bad);border:1px solid rgba(255,138,138,.3)}
-  .btn-sm{padding:8px 13px;font-size:.86rem;border-radius:10px}
+  .btn:active{transform:scale(.98)}
+  .btn-primary{
+    background:linear-gradient(90deg,var(--primary-container),var(--secondary-container));
+    color:var(--on-primary-container);box-shadow:0 0 16px rgba(37,99,235,.4)
+  }
+  .btn-ghost{background:var(--surf-high);color:var(--on-surface);border:1px solid var(--line-soft)}
+  .btn-ghost:hover{background:var(--surf-highest)}
+  .btn-quiet{background:var(--surf-low);color:var(--on-surface-variant);border:1px solid var(--line-soft)}
+  .btn-quiet:hover{background:var(--surf-high)}
+  .btn-danger{background:rgba(147,0,10,.35);color:var(--error);border:1px solid rgba(255,180,171,.25)}
+  .btn-sm{padding:7px 12px;min-height:0;font-size:13px;border-radius:var(--r-sm)}
 
-  /* ===== checklist ===== */
-  .checks{display:grid;gap:8px}
+  /* ══════════ checklist ══════════ */
+  .checks{display:grid;gap:7px}
   .check{
-    display:flex;gap:11px;align-items:flex-start;background:#0A1322;border:1px solid var(--line);
-    border-radius:11px;padding:11px 13px;cursor:pointer;transition:.18s border-color,.18s background
+    display:flex;gap:10px;align-items:flex-start;background:var(--surf-lowest);
+    border:1px solid var(--line-soft);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:.16s
   }
-  .check:hover{border-color:var(--line-strong)}
+  .check:hover{border-color:var(--line)}
   .check input{
-    appearance:none;width:20px;height:20px;flex:0 0 20px;margin-top:1px;border-radius:6px;
-    border:1.6px solid var(--line-strong);background:transparent;cursor:pointer;position:relative;transition:.15s
+    appearance:none;width:20px;height:20px;flex:0 0 20px;margin-top:1px;border-radius:var(--r-sm);
+    border:1.6px solid var(--outline-variant);background:transparent;position:relative;cursor:pointer;transition:.15s
   }
-  .check input:checked{background:var(--good);border-color:var(--good)}
+  .check input:checked{background:var(--tertiary);border-color:var(--tertiary)}
   .check input:checked::after{
-    content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#062015;font-weight:900;font-size:.85rem
+    content:"";position:absolute;inset-inline-start:6px;top:2px;width:5px;height:10px;
+    border:solid #002114;border-width:0 2px 2px 0;transform:rotate(45deg)
   }
-  .check span{font-size:.93rem;color:#D5DBE6}
-  .check input:checked + span{color:var(--dim);text-decoration:line-through}
-  .progress{height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 12px}
-  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#3FB98A);width:0;transition:.3s width}
+  .check span{font-size:14px;color:var(--on-surface-variant)}
+  .check input:checked + span{color:var(--outline);text-decoration:line-through}
+  .progress{height:4px;border-radius:999px;background:var(--surf-highest);overflow:hidden;margin:2px 0 12px}
+  .progress i{display:block;height:100%;width:0;transition:.3s width;
+    background:linear-gradient(90deg,var(--tertiary),var(--primary-container))}
 
-  /* ===== catalog ===== */
-  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 6px}
+  /* ══════════ catalog ══════════ */
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
   .chip{
-    font-weight:700;font-size:.88rem;color:var(--frost);background:rgba(255,255,255,.04);
-    border:1.4px solid var(--line);border-radius:999px;padding:8px 15px;transition:.18s
+    font-size:13px;font-weight:600;color:var(--on-surface-variant);background:var(--surf-high);
+    border:1px solid var(--line-soft);border-radius:999px;padding:7px 14px;transition:.16s
   }
-  .chip:hover{background:rgba(31,162,255,.12)}
-  .chip[aria-pressed="true"]{background:linear-gradient(135deg,var(--azure-bright),var(--azure-deep));border-color:transparent;color:#fff}
-  .grid{display:grid;gap:12px;margin-top:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  .chip:hover{background:var(--surf-highest);color:var(--on-surface)}
+  .chip[aria-pressed="true"]{background:var(--primary-container);border-color:transparent;color:var(--on-primary-container)}
+  .grid{display:grid;gap:10px;margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
   .tcard{
-    text-align:right;background:linear-gradient(180deg,var(--surface),var(--surface-2));
-    border:1px solid var(--line);border-radius:var(--r);padding:17px;color:var(--ink);
-    display:flex;flex-direction:column;gap:8px;transition:.2s transform,.2s border-color
+    text-align:right;background:rgba(23,31,51,.85);backdrop-filter:blur(20px);
+    border:1px solid var(--line-soft);border-radius:var(--r-card);padding:15px;color:var(--on-surface);
+    display:flex;flex-direction:column;gap:7px;position:relative;overflow:hidden;
+    box-shadow:0 4px 16px rgba(0,0,0,.3);transition:.2s transform,.2s border-color,.2s box-shadow
   }
-  .tcard:hover{transform:translateY(-3px);border-color:var(--line-strong)}
+  .tcard:hover{transform:translateY(-3px);border-color:rgba(37,99,235,.5);box-shadow:0 0 22px rgba(37,99,235,.2)}
   .tcard.hidden{display:none}
-  .tcard h3{font-size:1.14rem;font-weight:800;direction:ltr;text-align:right}
-  .tcard .tl{color:var(--azure-bright);font-weight:700;font-size:.92rem;margin-top:-4px}
-  .tcard .d{color:var(--frost);font-size:.9rem}
-  .tcard .go{color:var(--azure-bright);font-weight:800;font-size:.88rem;margin-top:auto;padding-top:6px}
+  .tcard .tc-head{display:flex;align-items:center;gap:8px}
+  .tcard .tc-ico{
+    width:32px;height:32px;flex:0 0 32px;border-radius:var(--r-sm);display:grid;place-items:center;
+    background:var(--surf-high);color:var(--tertiary)
+  }
+  .tcard h3{font-family:var(--f-display);font-size:17px;font-weight:600;direction:ltr;text-align:right}
+  .tcard .tl{color:var(--tertiary);font-weight:600;font-size:13px;margin-top:-3px}
+  .tcard .d{color:var(--on-surface-variant);font-size:13.5px}
+  .tcard .go{color:var(--primary);font-weight:600;font-size:13px;margin-top:auto;padding-top:4px}
 
-  /* ===== log ===== */
-  .log-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  /* ══════════ log ══════════ */
+  .log-actions{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
   .entry{
-    background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--line);
-    border-radius:var(--r);padding:16px;display:grid;gap:9px
+    background:rgba(23,31,51,.85);backdrop-filter:blur(20px);border:1px solid var(--line-soft);
+    border-radius:var(--r-card);padding:15px;display:grid;gap:8px;position:relative;overflow:hidden;
+    box-shadow:0 4px 16px rgba(0,0,0,.3)
   }
-  .entry + .entry{margin-top:11px}
-  .entry-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-  .entry .ticker{font-weight:900;font-size:1.15rem;direction:ltr;text-align:right}
-  .entry .tool{font-size:.8rem;font-weight:700;color:var(--dim)}
-  .entry .thesis{color:#D5DBE6;font-size:.95rem}
-  .entry .line{font-size:.88rem;color:var(--frost)}
-  .entry .line b{color:var(--dim);font-weight:800;font-size:.8rem}
+  .entry + .entry{margin-top:10px}
+  .entry-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .entry .ticker{font-family:var(--f-display);font-weight:600;font-size:18px;direction:ltr;text-align:right}
+  .entry .tool{font-family:var(--f-mono);font-size:11px;color:var(--outline)}
+  .entry .thesis{color:var(--on-surface);font-size:14px}
+  .entry .line{font-size:13px;color:var(--on-surface-variant)}
+  .entry .line b{color:var(--outline);font-family:var(--f-mono);font-size:11px;font-weight:600}
+  .entry .foot{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding-top:8px;border-top:1px solid var(--line-soft);color:var(--outline);
+    font-family:var(--f-mono);font-size:11px
+  }
   .pill{
-    font-size:.76rem;font-weight:800;border-radius:999px;padding:3px 10px;
-    background:rgba(255,255,255,.06);color:var(--frost);white-space:nowrap
+    font-family:var(--f-mono);font-size:10px;line-height:14px;font-weight:600;letter-spacing:.04em;
+    border-radius:999px;padding:3px 9px;background:var(--surf-high);color:var(--on-surface-variant);white-space:nowrap
   }
-  .pill.soon{background:rgba(255,196,107,.14);color:var(--warn)}
-  .pill.past{background:rgba(255,138,138,.12);color:var(--bad)}
-  .pill.done{background:rgba(91,214,160,.14);color:var(--good)}
-  .empty{text-align:center;color:var(--dim);padding:44px 16px;border:1px dashed var(--line);border-radius:var(--r);margin-top:16px}
-  .empty b{display:block;color:var(--frost);font-size:1.05rem;margin-bottom:6px}
+  .pill.soon{background:rgba(37,99,235,.25);color:var(--primary)}
+  .pill.past{background:rgba(147,0,10,.3);color:var(--error)}
+  .pill.done{background:rgba(69,223,164,.16);color:var(--tertiary)}
+  .empty{
+    text-align:center;color:var(--outline);padding:40px 16px;border:1px dashed var(--line);
+    border-radius:var(--r-card);margin-top:14px;font-size:14px
+  }
+  .empty b{display:block;font-family:var(--f-display);color:var(--on-surface-variant);font-size:16px;margin-bottom:6px}
 
-  /* ===== toast + footer ===== */
+  /* ══════════ sticky action bar (tool screen) ══════════ */
+  #actionbar{
+    position:fixed;inset-inline:0;bottom:0;z-index:50;padding:0 12px;
+    padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px);pointer-events:none
+  }
+  #actionbar[hidden]{display:none}
+  #actionbar .inner{
+    max-width:880px;margin:0 auto;pointer-events:auto;display:flex;align-items:center;gap:8px;
+    background:rgba(23,31,51,.92);backdrop-filter:blur(20px);border:1px solid var(--line);
+    border-radius:var(--r-card);padding:8px;box-shadow:0 8px 32px rgba(0,0,0,.6)
+  }
+  #actionbar .inner .btn{flex:1}
+  #actionbar .meta{
+    display:none;font-family:var(--f-mono);font-size:11px;color:var(--outline);padding:0 4px;white-space:nowrap
+  }
+  @media (min-width:600px){#actionbar .meta{display:block}}
+
+  /* ══════════ toast + footer ══════════ */
   #toast{
-    position:fixed;inset-inline:0;bottom:22px;margin:0 auto;width:max-content;max-width:90vw;z-index:99;
-    background:var(--raised);border:1px solid var(--line-strong);border-radius:12px;padding:11px 18px;
-    font-weight:700;font-size:.92rem;box-shadow:0 14px 40px rgba(0,0,0,.5);
-    opacity:0;transform:translateY(10px);pointer-events:none;transition:.22s
+    position:fixed;inset-inline:0;bottom:88px;margin:0 auto;width:max-content;max-width:90vw;z-index:99;
+    background:var(--surf-high);border:1px solid var(--line);border-radius:var(--r);padding:10px 16px;
+    font-size:14px;font-weight:600;box-shadow:0 12px 36px rgba(0,0,0,.6);
+    opacity:0;transform:translateY(8px);pointer-events:none;transition:.2s
   }
   #toast.show{opacity:1;transform:none}
-  footer{border-top:1px solid var(--line);margin-top:10px;padding:22px 0 60px;position:relative;z-index:1}
-  .note{color:var(--dim);font-size:.87rem;max-width:70ch}
-  .note b{color:var(--frost)}
-  @media (max-width:520px){
-    .topbar .wrap{height:56px;gap:8px}
-    .brand span.name{display:none}
-    .screen{padding:20px 0 80px}
-    .card{padding:15px}
-    .btn{flex:1 1 auto}
+  footer{border-top:1px solid var(--line-soft);margin-top:8px;padding:18px 0 60px;position:relative;z-index:1}
+  .note{color:var(--outline);font-size:12.5px;line-height:1.7;max-width:70ch}
+  .note b{color:var(--on-surface-variant)}
+  @media (max-width:400px){
+    h1{font-size:26px;line-height:34px}
+    .tab{padding:7px 9px}
   }
+  @media (max-width:344px){.brand .txt{display:none}}
 </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="wrap">
-    <div class="brand"><span class="mark">₪</span><span class="name">שולחן מחקר</span></div>
+    <div class="brand">
+      <span class="mark">₪</span>
+      <span class="txt">
+        <span class="name">שולחן מחקר</span>
+        <span class="sub caps">equity research</span>
+      </span>
+    </div>
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" data-screen="start" aria-selected="true">התחלה</button>
       <button class="tab" role="tab" data-screen="tools" aria-selected="false">הכלים</button>
-      <button class="tab" role="tab" data-screen="log" aria-selected="false">היומן שלי<span class="badge" id="logCount" hidden>0</span></button>
+      <button class="tab" role="tab" data-screen="log" aria-selected="false">היומן<span class="badge" id="logCount" hidden>0</span></button>
     </div>
   </div>
+</div>
+
+<div class="hud">
+  <span class="pill"><span class="dot live"></span><span id="hudStatus">היומן ריק</span></span>
+  <span class="right" id="hudRight">10 כלים · 4 קטגוריות</span>
 </div>
 
 <!-- ══════════ START ══════════ -->
 <section class="screen active" id="screen-start">
   <div class="wrap">
-    <span class="eyebrow">שולחן עבודה למחקר מניות</span>
     <h1>מה המצב שלך עכשיו?</h1>
     <p class="lede">בוחרים מצב, מקבלים פרומפט מוכן להעתקה, עוברים צ'קליסט אימות ושומרים את התזה ביומן. הכל נשמר במכשיר שלך בלבד.</p>
 
     <div class="sits" id="sits"></div>
 
-    <div class="card rules">
+    <div class="card node rules">
       <h2 class="section-title" style="margin-top:0"><span class="n">!</span>חמישה כללים לפני שמסתמכים על תשובה</h2>
       <ul>
         <li><b>כל מספר מאומת מול המקור.</b> דוח כספי, 10-Q/10-K או הודעה רשמית — לא מול הסיכום.</li>
@@ -294,10 +397,13 @@
   <div class="wrap">
     <button class="back" id="backBtn">→ חזרה</button>
 
-    <div class="card">
+    <div class="card node">
       <div class="tool-head">
-        <span class="num" id="toolNum">01</span>
-        <span class="tag" id="toolTag"></span>
+        <span class="tool-id">
+          <span class="num" id="toolNum">01</span>
+          <span class="tag caps" id="toolTag"></span>
+        </span>
+        <span class="chip-live caps"><span class="dot" style="width:6px;height:6px;border-radius:999px;background:currentColor"></span>ready</span>
       </div>
       <h2 class="tool-name" id="toolName"></h2>
       <p class="tool-tagline" id="toolTagline"></p>
@@ -316,11 +422,8 @@
     <h2 class="section-title"><span class="n">2</span>הפרומפט שלך</h2>
     <p class="hint">מתעדכן תוך כדי הקלדה. העתק והדבק ב-Claude, ותצרף את הדוח או ה-transcript כקובץ.</p>
     <div class="card">
+      <div class="code-head caps"><span class="file">prompt.md</span><span id="promptMeta">0 שורות</span></div>
       <div class="prompt-box" id="promptBox"></div>
-      <div class="actions">
-        <button class="btn btn-primary" id="copyBtn">העתק פרומפט</button>
-        <a class="btn btn-ghost" id="openClaude" target="_blank" rel="noopener">פתח ב-Claude ↗</a>
-      </div>
     </div>
 
     <h2 class="section-title"><span class="n">3</span>צ'קליסט אימות</h2>
@@ -381,7 +484,7 @@
     <h1>יומן המחקר שלי</h1>
     <p class="lede">כל מה ששמרת, ממוין לפי האירוע הקרוב ביותר. נשמר במכשיר שלך (localStorage) — לא נשלח לשום מקום.</p>
     <div class="log-actions">
-      <button class="btn btn-quiet btn-sm" id="exportMd">ייצוא כ-Markdown</button>
+      <button class="btn btn-quiet btn-sm" id="exportMd">ייצוא Markdown</button>
       <button class="btn btn-quiet btn-sm" id="exportJson">גיבוי JSON</button>
       <button class="btn btn-quiet btn-sm" id="importBtn">שחזור מגיבוי</button>
       <input type="file" id="importFile" accept="application/json,.json" hidden />
@@ -396,8 +499,15 @@
   </div>
 </footer>
 
-<div id="toast" role="status" aria-live="polite"></div>
+<div id="actionbar" hidden>
+  <div class="inner">
+    <span class="meta" id="barMeta">prompt.md</span>
+    <button class="btn btn-ghost" id="copyBtn">העתק פרומפט</button>
+    <a class="btn btn-primary" id="openClaude" target="_blank" rel="noopener">פתח ב-Claude ↗</a>
+  </div>
+</div>
 
+<div id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ══════════════════════════════════════════════════════════════════
    נתוני הכלים: שדות, פרומפט וצ'קליסט אימות לכל כלי
@@ -421,6 +531,29 @@ var FIELDS = {
 
 var GUARD = 'כללים: אל תמליץ לי לקנות, למכור או להחזיק. אם מספר לא מופיע במקורות שנתתי — כתוב "לא ידוע" במקום לנחש. ליד כל מספר ציין מאיפה הוא. סמן בבירור מה עובדה, מה הערכה שלך ומה דעה.';
 
+/* Inline stroke icons — no icon font, so they still render offline. */
+var IC = {
+  search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/>',
+  chart:'<path d="M3 20h18"/><path d="M6.5 20v-5.5"/><path d="M11.5 20V6"/><path d="M16.5 20v-9"/>',
+  calc:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 7h7"/><path d="M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01"/>',
+  map:'<path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7 9 4z"/><path d="M9 4v13M15 7v13"/>',
+  mega:'<path d="M4 10v4a1 1 0 0 0 1 1h2l7 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M18 8.5a4.5 4.5 0 0 1 0 7"/>',
+  users:'<circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5.6a3 3 0 0 1 0 5.8"/><path d="M17.6 14.6A6 6 0 0 1 21 20"/>',
+  table:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9.5h18M9 9.5V20M3 15h18"/>',
+  audit:'<path d="M9.5 4h5v3h-5z"/><path d="M14.5 5.5H17a2 2 0 0 1 2 2V19a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7.5a2 2 0 0 1 2-2h2.5"/><path d="M9 13.8l2 2 4-4"/>',
+  bank:'<path d="M3 9.5 12 4l9 5.5"/><path d="M5.5 11v7M10 11v7M14 11v7M18.5 11v7"/><path d="M3 21h18"/>',
+  shield:'<path d="M12 3l7 3v5.2c0 4.4-2.9 7.9-7 9.8-4.1-1.9-7-5.4-7-9.8V6l7-3z"/><path d="M9.3 12.2l1.9 1.9 3.6-3.6"/>'
+};
+function icon(name, cls) {
+  return '<svg class="ic ' + (cls || '') + '" viewBox="0 0 24 24" aria-hidden="true">' + (IC[name] || '') + '</svg>';
+}
+var TOOL_ICON = {
+  'equity-research':'search', 'earnings-reviewer':'chart', 'financial-analysis':'calc',
+  'market-researcher':'map', 'pitch-agent':'mega', 'meeting-prep':'users',
+  'model-builder':'table', 'valuation-reviewer':'audit', 'investment-banking':'bank',
+  'kyc-screener':'shield'
+};
+
 var TOOLS = [
   {
     id:'equity-research', num:'01', cat:'retail', tag:'Retail relevant',
@@ -429,7 +562,7 @@ var TOOLS = [
     who:'משקיע פרטי שרוצה לעבוד כמו אנליסט',
     when:'כשיש מניה שרוצים להבין לעומק, עם דוחות, שיחת משקיעים ותזה מסודרת.',
     check:'זה לא אומר אם לקנות. זה מסביר מה השתנה, מה הסיכונים ומה צריך לבדוק.',
-    sit:{icon:'🔍', t:'רוצה להכיר חברה חדשה מאפס', s:'תמונה מלאה: מודל עסקי, מספרים, סיכונים ותזה'},
+    sit:{t:'רוצה להכיר חברה חדשה מאפס', s:'תמונה מלאה: מודל עסקי, מספרים, סיכונים ותזה'},
     fields:['ticker','status','horizon','context','sources'],
     prompt:[
       'אני משקיע פרטי ורוצה להכיר לעומק את {{ticker}}. עזור לי לבנות תיק מחקר מסודר.',
@@ -466,7 +599,7 @@ var TOOLS = [
     who:'מי שמחזיק מניות ועוקב אחרי רבעונים',
     when:'חברה פרסמה דוח ורוצים להבין מהר אם הסיפור השתנה.',
     check:'עדיין בודקים את המספרים הקריטיים ידנית. Claude עוזר לקרוא, לא מחליט בשבילך.',
-    sit:{icon:'📊', t:'יצא דוח רבעוני לחברה שאני עוקב אחריה', s:'מה השתנה בפועל, מה ה-guidance ומה לעדכן'},
+    sit:{t:'יצא דוח רבעוני לחברה שאני עוקב אחריה', s:'מה השתנה בפועל, מה ה-guidance ומה לעדכן'},
     fields:['ticker','period','status','horizon','context','sources'],
     prompt:[
       'אני משקיע פרטי. עזור לי לנתח את דוח {{period}} של {{ticker}}.',
@@ -503,7 +636,7 @@ var TOOLS = [
     who:'מי שרוצה להבין שווי ולא רק לקרוא תקציר',
     when:'כשצריך ניתוח מספרי, השוואת מכפילים או ביקורת על מודל קיים.',
     check:'ההנחות הן הסיפור. כל נוסחה וטווח שווי צריכים בדיקה אנושית.',
-    sit:{icon:'🧮', t:'רוצה להבין כמה החברה באמת שווה', s:'DCF, מכפילים והשוואה לחברות דומות'},
+    sit:{t:'רוצה להבין כמה החברה באמת שווה', s:'DCF, מכפילים והשוואה לחברות דומות'},
     fields:['ticker','peers','horizon','context','sources'],
     prompt:[
       'עזור לי להעריך את השווי של {{ticker}} בצורה מסודרת ושקופה.',
@@ -540,7 +673,7 @@ var TOOLS = [
     who:'משקיע שרוצה למצוא רעיונות או להבין תחום',
     when:'כשלא יודעים איפה להתחיל ורוצים להבין מי השחקנים ומה הכיוון.',
     check:'זו מפת מחקר ראשונית, לא המלצת קנייה או מכירה.',
-    sit:{icon:'🗺️', t:'רוצה להבין סקטור או למצוא רעיונות', s:'מי השחקנים, לאן הכסף זורם ומה הסיכון בתחום'},
+    sit:{t:'רוצה להבין סקטור או למצוא רעיונות', s:'מי השחקנים, לאן הכסף זורם ומה הסיכון בתחום'},
     fields:['sector','peers','horizon','context'],
     prompt:[
       'אני רוצה להבין את התחום: {{sector}}. עזור לי לבנות מפת שוק לפני שאני נכנס לחברה ספציפית.',
@@ -575,7 +708,7 @@ var TOOLS = [
     who:'אנליסט / בנקאות השקעות / יועץ',
     when:'יותר מתאים למצגות ועסקאות מאשר לניהול תיק אישי.',
     check:'פיץ׳ יכול להישמע משכנע מדי. מפרידים עובדות, הנחות ודעה.',
-    sit:{icon:'🎤', t:'צריך להציג מחקר לאנשים אחרים', s:'להפוך ניתוח לסיפור עם טיעון וסיכונים'},
+    sit:{t:'צריך להציג מחקר לאנשים אחרים', s:'להפוך ניתוח לסיפור עם טיעון וסיכונים'},
     fields:['ticker','audience','context','sources'],
     prompt:[
       'עזור לי להפוך את המחקר על {{ticker}} לפיץ׳ מסודר.',
@@ -610,7 +743,7 @@ var TOOLS = [
     who:'צוות פיננסים / יועצים / אנשי מכירות',
     when:'לפני פגישה מקצועית שבה צריך להגיע עם שאלות ולא עם תחושת בטן.',
     check:'לא להכניס מידע רגיש בלי צורך.',
-    sit:{icon:'🤝', t:'מתכונן לפגישה מקצועית', s:'רקע, סדר יום והשאלות שחייבים לשאול'},
+    sit:{t:'מתכונן לפגישה מקצועית', s:'רקע, סדר יום והשאלות שחייבים לשאול'},
     fields:['meeting','ticker','context'],
     prompt:[
       'עזור לי להתכונן לפגישה: {{meeting}}',
@@ -643,7 +776,7 @@ var TOOLS = [
     who:'אנליסט / צוות כספים',
     when:'כשצריך גיליון עבודה שמתחיל מסודר במקום להמציא Excel מאפס.',
     check:'המודל הוא התחלה. ההנחות הן העבודה האמיתית.',
-    sit:{icon:'📐', t:'צריך לבנות מודל תחזית', s:'מבנה גיליון, נוסחאות ותרחישים'},
+    sit:{t:'צריך לבנות מודל תחזית', s:'מבנה גיליון, נוסחאות ותרחישים'},
     fields:['ticker','horizon','model','context'],
     prompt:[
       'עזור לי לבנות מודל פיננסי ל-{{ticker}}.',
@@ -678,7 +811,7 @@ var TOOLS = [
     who:'אנליסט / משקיע מתקדם',
     when:'לפני שמסתמכים על מודל, מצגת או תזה פיננסית.',
     check:'ביקורת טובה תלויה באיכות הנתונים שהכנסת.',
-    sit:{icon:'🧪', t:'יש לי מודל או תזה ואני רוצה ביקורת', s:'איפה החישוב או ההיגיון נשברים'},
+    sit:{t:'יש לי מודל או תזה ואני רוצה ביקורת', s:'איפה החישוב או ההיגיון נשברים'},
     fields:['ticker','valuation','model','context'],
     prompt:[
       'בצע ביקורת ביקורתית על הערכת השווי שלי ל-{{ticker}}. תפקידך למצוא איפה אני טועה, לא להסכים איתי.',
@@ -713,7 +846,7 @@ var TOOLS = [
     who:'בנקאי השקעות / צוות עסקאות',
     when:'יותר לתעשייה ולצוותי עסקאות, פחות למשקיע פרטי בבית.',
     check:'לא רלוונטי לרוב האנשים אלא אם עובדים על עסקה אמיתית.',
-    sit:{icon:'🏦', t:'עובד על עסקה או חומרי עסקה', s:'מבנה ניתוח, חומרים למשקיעים ובדיקות'},
+    sit:{t:'עובד על עסקה או חומרי עסקה', s:'מבנה ניתוח, חומרים למשקיעים ובדיקות'},
     fields:['deal','context','sources'],
     prompt:[
       'אני עובד על עסקה ומבקש עזרה במבנה העבודה.',
@@ -747,7 +880,7 @@ var TOOLS = [
     who:'צוות פיננסים / Compliance',
     when:'עבודה מקצועית של גוף פיננסי, לא שימוש רגיל של משקיע פרטי.',
     check:'רגולציה ופרטיות קודם. לא משתמשים בזה בלי תהליך מאושר.',
-    sit:{icon:'🛡️', t:'עבודת ציות ובדיקת סיכון (KYC)', s:'מסגרת עבודה בלבד — לא בדיקה על אדם אמיתי'},
+    sit:{t:'עבודת ציות ובדיקת סיכון (KYC)', s:'מסגרת עבודה בלבד — לא בדיקה על אדם אמיתי'},
     fields:['subject','context'],
     prompt:[
       'עזור לי לבנות מסגרת עבודה לבדיקת KYC. אני מבקש מתודולוגיה בלבד — לא בדיקה על אדם או ישות מזוהים.',
@@ -813,6 +946,7 @@ var TOOLS = [
     screens.forEach(function (s) {
       $('screen-' + s).classList.toggle('active', s === name);
     });
+    $('actionbar').hidden = name !== 'tool';
     document.querySelectorAll('.tab').forEach(function (tab) {
       var on = tab.getAttribute('data-screen') === name ||
                (name === 'tool' && tab.getAttribute('data-screen') === 'tools');
@@ -839,8 +973,12 @@ var TOOLS = [
     b.className = 'sit';
     b.type = 'button';
     b.innerHTML =
-      '<span class="ico">' + t.sit.icon + '</span>' +
-      '<span class="txt"><span class="t">' + t.sit.t + '</span><br><span class="s">' + t.sit.s + '</span></span>' +
+      '<span class="ico">' + icon(TOOL_ICON[t.id]) + '</span>' +
+      '<span class="txt">' +
+        '<span class="t">' + t.sit.t + '</span>' +
+        '<span class="s">' + t.sit.s + '</span>' +
+        '<span class="id caps">' + t.num + ' · ' + t.name + '</span>' +
+      '</span>' +
       '<span class="arrow">←</span>';
     b.addEventListener('click', function () { openTool(t.id); });
     sits.appendChild(b);
@@ -850,11 +988,15 @@ var TOOLS = [
   var grid = $('grid');
   TOOLS.forEach(function (t) {
     var c = document.createElement('button');
-    c.className = 'tcard';
+    c.className = 'tcard node';
     c.type = 'button';
     c.setAttribute('data-cat', t.cat);
     c.innerHTML =
-      '<div class="tool-head"><span class="num">' + t.num + '</span><span class="tag">' + t.tag + '</span></div>' +
+      '<div class="tc-head">' +
+        '<span class="tc-ico">' + icon(TOOL_ICON[t.id]) + '</span>' +
+        '<span class="num">' + t.num + '</span>' +
+        '<span class="tag caps">' + t.tag + '</span>' +
+      '</div>' +
       '<h3>' + t.name + '</h3>' +
       '<p class="tl">' + t.tagline + '</p>' +
       '<p class="d">' + t.desc + '</p>' +
@@ -979,6 +1121,9 @@ var TOOLS = [
     var text = buildPrompt(current, values);
     $('promptBox').textContent = text;
     $('openClaude').href = 'https://claude.ai/new?q=' + encodeURIComponent(text);
+    var lines = text.split('\n').filter(function (l) { return l.trim(); }).length;
+    $('promptMeta').textContent = lines + ' שורות · ' + text.length + ' תווים';
+    $('barMeta').textContent = current.id;
   }
 
   function renderChecks(t) {
@@ -1141,7 +1286,7 @@ var TOOLS = [
       var total = t ? t.checks.length : (e.checks || []).length;
       var checkCls = total && done === total ? 'done' : '';
       var el = document.createElement('div');
-      el.className = 'entry';
+      el.className = 'entry node';
       el.innerHTML =
         '<div class="entry-top">' +
           '<span class="ticker">' + esc(e.title) + '</span>' +
@@ -1152,7 +1297,7 @@ var TOOLS = [
         (e.thesis ? '<p class="thesis">' + esc(e.thesis) + '</p>' : '') +
         (e.invalidate ? '<p class="line"><b>משנה דעה: </b>' + esc(e.invalidate) + '</p>' : '') +
         (e.verify ? '<p class="line"><b>לאמת: </b>' + esc(e.verify) + '</p>' : '') +
-        '<p class="line" style="color:var(--dim)">עודכן ' + fmtDate(e.updated) + '</p>' +
+        '<div class="foot"><span>עודכן ' + fmtDate(e.updated) + '</span><span>' + esc(e.toolId) + '</span></div>' +
         '<div class="actions">' +
           '<button class="btn btn-ghost btn-sm" data-act="open">פתח והמשך</button>' +
           '<button class="btn btn-danger btn-sm" data-act="del">מחק</button>' +
@@ -1174,6 +1319,24 @@ var TOOLS = [
     var b = $('logCount');
     b.textContent = entries.length;
     b.hidden = entries.length === 0;
+    updateHud();
+  }
+
+  /* HUD strip: the journal's live state, not decoration */
+  function updateHud() {
+    $('hudStatus').textContent = entries.length
+      ? 'יומן פעיל · ' + entries.length + ' רשומות'
+      : 'היומן ריק';
+
+    var next = null;
+    entries.forEach(function (e) {
+      var d = daysTo(e.date);
+      if (d === null || d < 0) return;
+      if (!next || d < next.d) next = { d: d, title: e.title };
+    });
+    $('hudRight').textContent = next
+      ? (next.d === 0 ? 'היום: ' : 'בעוד ' + next.d + ' ימים: ') + next.title
+      : TOOLS.length + ' כלים · 4 קטגוריות';
   }
 
   /* ══════════ export / import ══════════ */
