@@ -2,294 +2,1268 @@
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>כלי מחקר מניות — מדריך כלים פיננסיים</title>
-<meta name="description" content="מדריך לכלי מחקר מניות וניתוח פיננסי: למי כל כלי מתאים, מתי להשתמש בו ומה חייבים לבדוק ידנית." />
-<meta name="theme-color" content="#1FA2FF" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>שולחן מחקר מניות — פרומפט, צ'קליסט ויומן</title>
+<meta name="description" content="כלי עבודה למחקר מניות: בוחרים מצב, מקבלים פרומפט מוכן ל-Claude, עוברים צ'קליסט אימות ושומרים תזה ביומן המחקר. הכל נשמר במכשיר שלך." />
+<meta name="theme-color" content="#0A0F1A" />
 <link rel="icon" href="/favicon.ico" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --azure:#1FA2FF;
-    --azure-bright:#33C2FF;
-    --azure-deep:#0B6FC2;
-    --slate-900:#0A0F1A;
-    --slate-850:#0E1626;
-    --slate-800:#111C30;
-    --line:rgba(31,162,255,.16);
-    --ink:#F4F8FE;
-    --frost:#C9D7E8;
-    --frost-dim:#8499B2;
-    --radius:18px;
+    --azure:#1FA2FF; --azure-bright:#33C2FF; --azure-deep:#0B6FC2;
+    --bg:#0A0F1A; --surface:#0E1626; --surface-2:#111C30; --raised:#16243C;
+    --line:rgba(31,162,255,.16); --line-strong:rgba(31,162,255,.34);
+    --ink:#F4F8FE; --frost:#C9D7E8; --dim:#8499B2;
+    --warn:#FFC46B; --good:#5BD6A0; --bad:#FF8A8A;
+    --r:16px;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  html{scroll-behavior:smooth}
+  html{scroll-behavior:smooth;background:var(--bg)}
   body{
     font-family:'Heebo',"Assistant",system-ui,-apple-system,sans-serif;
-    background:var(--slate-900);
-    color:var(--ink);
-    line-height:1.6;
-    -webkit-font-smoothing:antialiased;
+    background:var(--bg);color:var(--ink);line-height:1.6;
+    -webkit-font-smoothing:antialiased;min-height:100dvh;
   }
   body::before{
     content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     background:
-      radial-gradient(900px 500px at 80% -5%, rgba(31,162,255,.16), transparent 60%),
-      radial-gradient(700px 500px at 0% 25%, rgba(11,111,194,.12), transparent 60%),
-      linear-gradient(180deg,#0A0F1A 0%,#0B1322 100%);
+      radial-gradient(900px 500px at 85% -8%, rgba(31,162,255,.15), transparent 60%),
+      radial-gradient(700px 500px at 0% 20%, rgba(11,111,194,.10), transparent 60%);
   }
-  main,header,footer{position:relative;z-index:1}
-  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+  .wrap{max-width:900px;margin:0 auto;padding:0 18px;position:relative;z-index:1}
   a{color:var(--azure-bright);text-decoration:none}
+  button{font:inherit;cursor:pointer}
+  input,textarea,select{font:inherit}
+  h1,h2,h3{line-height:1.22;letter-spacing:-.3px}
+  .ltr{direction:ltr;text-align:right;unicode-bidi:isolate}
 
-  /* ===== hero ===== */
-  header{padding:64px 0 34px;border-bottom:1px solid var(--line)}
-  .eyebrow{
-    display:inline-block;font-size:.82rem;font-weight:700;letter-spacing:.08em;
-    color:var(--azure-bright);background:rgba(31,162,255,.1);
-    border:1px solid rgba(31,162,255,.28);border-radius:999px;padding:6px 14px;margin-bottom:18px;
+  /* ===== top bar ===== */
+  .topbar{
+    position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);
+    background:rgba(10,15,26,.86);border-bottom:1px solid var(--line);
   }
-  h1{font-size:clamp(2rem,5vw,3rem);font-weight:900;line-height:1.15;letter-spacing:-.5px}
-  .lede{color:var(--frost);font-size:clamp(1rem,2.2vw,1.15rem);max-width:62ch;margin-top:14px}
-
-  /* ===== filters ===== */
-  .filters{display:flex;flex-wrap:wrap;gap:10px;padding:26px 0 4px}
-  .chip{
-    font:inherit;font-weight:700;font-size:.92rem;cursor:pointer;
-    color:var(--frost);background:rgba(255,255,255,.04);
-    border:1.5px solid rgba(31,162,255,.22);border-radius:999px;padding:9px 18px;
-    transition:.2s background,.2s color,.2s border-color,.2s transform;
-  }
-  .chip:hover{transform:translateY(-1px);background:rgba(31,162,255,.12)}
-  .chip[aria-pressed="true"]{
+  .topbar .wrap{display:flex;align-items:center;gap:12px;height:60px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:900;font-size:1.05rem;white-space:nowrap}
+  .brand .mark{
+    width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
     background:linear-gradient(135deg,var(--azure-bright),var(--azure-deep));
-    border-color:transparent;color:#fff;box-shadow:0 8px 24px rgba(31,162,255,.28);
+    color:#fff;font-weight:900;font-size:.95rem;box-shadow:0 6px 18px rgba(31,162,255,.35)
   }
-  .count{color:var(--frost-dim);font-size:.9rem;padding:14px 0 0}
+  .tabs{display:flex;gap:6px;margin-inline-start:auto;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    background:transparent;border:1px solid transparent;border-radius:999px;
+    color:var(--dim);font-weight:700;font-size:.9rem;padding:7px 13px;white-space:nowrap;
+    transition:.18s background,.18s color,.18s border-color;
+  }
+  .tab:hover{color:var(--frost);background:rgba(255,255,255,.05)}
+  .tab[aria-selected="true"]{color:#fff;background:rgba(31,162,255,.16);border-color:var(--line-strong)}
+  .tab .badge{
+    display:inline-block;min-width:19px;padding:0 5px;margin-inline-start:5px;border-radius:999px;
+    background:var(--azure);color:#04121f;font-size:.74rem;font-weight:900;line-height:19px;text-align:center
+  }
+  .tab .badge[hidden]{display:none}
 
-  /* ===== cards ===== */
-  .grid{
-    display:grid;gap:18px;padding:22px 0 60px;
-    grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+  /* ===== screens ===== */
+  .screen{display:none;padding:26px 0 90px}
+  .screen.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .eyebrow{
+    display:inline-block;font-size:.78rem;font-weight:800;letter-spacing:.07em;color:var(--azure-bright);
+    background:rgba(31,162,255,.1);border:1px solid var(--line-strong);border-radius:999px;padding:5px 12px;margin-bottom:14px
   }
+  h1{font-size:clamp(1.6rem,4.6vw,2.3rem);font-weight:900}
+  .lede{color:var(--frost);margin-top:10px;max-width:60ch;font-size:1.02rem}
+  .section-title{font-size:1.05rem;font-weight:800;margin:30px 0 12px;display:flex;align-items:center;gap:9px}
+  .section-title .n{
+    width:22px;height:22px;border-radius:7px;background:rgba(31,162,255,.16);color:var(--azure-bright);
+    display:grid;place-items:center;font-size:.78rem;font-weight:900
+  }
+  .hint{color:var(--dim);font-size:.88rem;margin-top:-4px;margin-bottom:12px}
+
+  /* ===== situation list ===== */
+  .sits{display:grid;gap:10px;margin-top:18px}
+  .sit{
+    display:flex;align-items:center;gap:13px;text-align:right;width:100%;
+    background:linear-gradient(180deg,var(--surface),var(--surface-2));
+    border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;color:var(--ink);
+    transition:.2s transform,.2s border-color,.2s background;
+  }
+  .sit:hover{transform:translateY(-2px);border-color:var(--line-strong);background:var(--raised)}
+  .sit .ico{
+    width:38px;height:38px;flex:0 0 38px;border-radius:11px;display:grid;place-items:center;
+    background:rgba(31,162,255,.12);font-size:1.15rem
+  }
+  .sit .txt{flex:1;min-width:0}
+  .sit .t{font-weight:800;font-size:1rem}
+  .sit .s{color:var(--dim);font-size:.86rem}
+  .sit .arrow{color:var(--azure-bright);font-weight:900;flex:0 0 auto}
+
+  /* ===== generic card ===== */
   .card{
-    background:linear-gradient(180deg,var(--slate-850),var(--slate-800));
-    border:1px solid var(--line);border-radius:var(--radius);
-    padding:22px 22px 20px;display:flex;flex-direction:column;gap:12px;
-    transition:.25s transform,.25s border-color,.25s box-shadow;
+    background:linear-gradient(180deg,var(--surface),var(--surface-2));
+    border:1px solid var(--line);border-radius:var(--r);padding:18px
   }
-  .card:hover{transform:translateY(-3px);border-color:rgba(31,162,255,.4);box-shadow:0 18px 40px rgba(0,0,0,.35)}
-  .card.hidden{display:none}
-  .card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .card + .card{margin-top:12px}
+  .rules{margin-top:26px}
+  .rules ul{margin:8px 0 0;padding-inline-start:20px;display:grid;gap:7px}
+  .rules li{color:var(--frost);font-size:.94rem}
+  .rules b{color:var(--ink)}
+
+  /* ===== tool screen ===== */
+  .back{
+    background:none;border:none;color:var(--azure-bright);font-weight:800;font-size:.95rem;
+    padding:0 0 12px;display:inline-flex;align-items:center;gap:6px
+  }
+  .tool-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px}
   .num{
-    font-variant-numeric:tabular-nums;font-weight:900;font-size:.95rem;
-    color:var(--azure-bright);background:rgba(31,162,255,.12);
-    border-radius:9px;padding:3px 9px;letter-spacing:.04em;
+    font-variant-numeric:tabular-nums;font-weight:900;font-size:.85rem;color:var(--azure-bright);
+    background:rgba(31,162,255,.12);border-radius:8px;padding:3px 9px
   }
-  .tag{font-size:.78rem;font-weight:700;color:var(--frost-dim);letter-spacing:.02em}
-  h2{font-size:1.3rem;font-weight:800;line-height:1.25;direction:ltr;text-align:right}
-  .tagline{color:var(--azure-bright);font-weight:700;font-size:.98rem;margin-top:-6px}
-  .desc{color:var(--frost);font-size:.97rem}
-  dl{display:grid;gap:10px;margin-top:2px;padding-top:14px;border-top:1px solid rgba(31,162,255,.12)}
-  dt{font-size:.8rem;font-weight:800;color:var(--frost-dim);letter-spacing:.02em}
-  dd{font-size:.94rem;color:#D5DBE6;margin-top:1px}
-  .row-check dd{color:#FFD9A8}
+  .tag{font-size:.76rem;font-weight:800;color:var(--dim);letter-spacing:.02em}
+  .tool-name{font-size:1.6rem;font-weight:900;direction:ltr;text-align:right}
+  .tool-tagline{color:var(--azure-bright);font-weight:700}
+  .tool-desc{color:var(--frost);margin-top:8px}
+  .meta{display:grid;gap:9px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .meta dt{font-size:.78rem;font-weight:800;color:var(--dim)}
+  .meta dd{font-size:.93rem;color:#D5DBE6}
+  .meta .warn dd{color:var(--warn)}
 
-  /* ===== footer ===== */
-  footer{border-top:1px solid var(--line);padding:28px 0 70px}
-  .note{
-    background:rgba(255,255,255,.03);border:1px solid var(--line);
-    border-radius:14px;padding:16px 18px;color:var(--frost);font-size:.93rem;max-width:70ch;
+  /* ===== form ===== */
+  .fields{display:grid;gap:13px}
+  .field label{display:block;font-size:.86rem;font-weight:800;color:var(--frost);margin-bottom:5px}
+  .field .sub{font-weight:500;color:var(--dim);font-size:.8rem}
+  .field input,.field textarea,.field select{
+    width:100%;background:#0A1322;border:1px solid var(--line);border-radius:11px;
+    color:var(--ink);padding:11px 13px;font-size:.98rem;transition:.18s border-color,.18s box-shadow
   }
-  .note strong{color:var(--ink)}
-  .back{display:inline-block;margin-top:20px;font-weight:700;font-size:.95rem}
+  .field textarea{min-height:74px;resize:vertical;line-height:1.55}
+  .field input:focus,.field textarea:focus,.field select:focus{
+    outline:none;border-color:var(--azure);box-shadow:0 0 0 3px rgba(31,162,255,.16)
+  }
+  .field input::placeholder,.field textarea::placeholder{color:#5C6B84}
+  .field select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);
+    background-position:calc(14px) calc(50% - 2px),calc(19px) calc(50% - 2px);background-size:5px 5px,5px 5px;background-repeat:no-repeat}
 
+  /* ===== prompt ===== */
+  .prompt-box{
+    background:#070D18;border:1px solid var(--line);border-radius:12px;padding:14px;
+    max-height:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+    font-size:.9rem;line-height:1.65;color:#D9E3F2
+  }
+  .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;justify-content:center;font-weight:800;font-size:.94rem;
+    border:none;border-radius:12px;padding:12px 18px;transition:.2s transform,.2s box-shadow,.2s background
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--azure-bright),var(--azure-deep));color:#fff;box-shadow:0 10px 26px rgba(31,162,255,.28)}
+  .btn-primary:hover{box-shadow:0 12px 32px rgba(51,194,255,.42)}
+  .btn-ghost{background:rgba(31,162,255,.09);color:var(--ink);border:1.5px solid var(--line-strong)}
+  .btn-ghost:hover{background:rgba(31,162,255,.16)}
+  .btn-quiet{background:rgba(255,255,255,.05);color:var(--frost);border:1px solid var(--line)}
+  .btn-quiet:hover{background:rgba(255,255,255,.09)}
+  .btn-danger{background:rgba(255,138,138,.1);color:var(--bad);border:1px solid rgba(255,138,138,.3)}
+  .btn-sm{padding:8px 13px;font-size:.86rem;border-radius:10px}
+
+  /* ===== checklist ===== */
+  .checks{display:grid;gap:8px}
+  .check{
+    display:flex;gap:11px;align-items:flex-start;background:#0A1322;border:1px solid var(--line);
+    border-radius:11px;padding:11px 13px;cursor:pointer;transition:.18s border-color,.18s background
+  }
+  .check:hover{border-color:var(--line-strong)}
+  .check input{
+    appearance:none;width:20px;height:20px;flex:0 0 20px;margin-top:1px;border-radius:6px;
+    border:1.6px solid var(--line-strong);background:transparent;cursor:pointer;position:relative;transition:.15s
+  }
+  .check input:checked{background:var(--good);border-color:var(--good)}
+  .check input:checked::after{
+    content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#062015;font-weight:900;font-size:.85rem
+  }
+  .check span{font-size:.93rem;color:#D5DBE6}
+  .check input:checked + span{color:var(--dim);text-decoration:line-through}
+  .progress{height:6px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden;margin:10px 0 12px}
+  .progress i{display:block;height:100%;background:linear-gradient(90deg,var(--good),#3FB98A);width:0;transition:.3s width}
+
+  /* ===== catalog ===== */
+  .filters{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 6px}
+  .chip{
+    font-weight:700;font-size:.88rem;color:var(--frost);background:rgba(255,255,255,.04);
+    border:1.4px solid var(--line);border-radius:999px;padding:8px 15px;transition:.18s
+  }
+  .chip:hover{background:rgba(31,162,255,.12)}
+  .chip[aria-pressed="true"]{background:linear-gradient(135deg,var(--azure-bright),var(--azure-deep));border-color:transparent;color:#fff}
+  .grid{display:grid;gap:12px;margin-top:14px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  .tcard{
+    text-align:right;background:linear-gradient(180deg,var(--surface),var(--surface-2));
+    border:1px solid var(--line);border-radius:var(--r);padding:17px;color:var(--ink);
+    display:flex;flex-direction:column;gap:8px;transition:.2s transform,.2s border-color
+  }
+  .tcard:hover{transform:translateY(-3px);border-color:var(--line-strong)}
+  .tcard.hidden{display:none}
+  .tcard h3{font-size:1.14rem;font-weight:800;direction:ltr;text-align:right}
+  .tcard .tl{color:var(--azure-bright);font-weight:700;font-size:.92rem;margin-top:-4px}
+  .tcard .d{color:var(--frost);font-size:.9rem}
+  .tcard .go{color:var(--azure-bright);font-weight:800;font-size:.88rem;margin-top:auto;padding-top:6px}
+
+  /* ===== log ===== */
+  .log-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .entry{
+    background:linear-gradient(180deg,var(--surface),var(--surface-2));border:1px solid var(--line);
+    border-radius:var(--r);padding:16px;display:grid;gap:9px
+  }
+  .entry + .entry{margin-top:11px}
+  .entry-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .entry .ticker{font-weight:900;font-size:1.15rem;direction:ltr;text-align:right}
+  .entry .tool{font-size:.8rem;font-weight:700;color:var(--dim)}
+  .entry .thesis{color:#D5DBE6;font-size:.95rem}
+  .entry .line{font-size:.88rem;color:var(--frost)}
+  .entry .line b{color:var(--dim);font-weight:800;font-size:.8rem}
+  .pill{
+    font-size:.76rem;font-weight:800;border-radius:999px;padding:3px 10px;
+    background:rgba(255,255,255,.06);color:var(--frost);white-space:nowrap
+  }
+  .pill.soon{background:rgba(255,196,107,.14);color:var(--warn)}
+  .pill.past{background:rgba(255,138,138,.12);color:var(--bad)}
+  .pill.done{background:rgba(91,214,160,.14);color:var(--good)}
+  .empty{text-align:center;color:var(--dim);padding:44px 16px;border:1px dashed var(--line);border-radius:var(--r);margin-top:16px}
+  .empty b{display:block;color:var(--frost);font-size:1.05rem;margin-bottom:6px}
+
+  /* ===== toast + footer ===== */
+  #toast{
+    position:fixed;inset-inline:0;bottom:22px;margin:0 auto;width:max-content;max-width:90vw;z-index:99;
+    background:var(--raised);border:1px solid var(--line-strong);border-radius:12px;padding:11px 18px;
+    font-weight:700;font-size:.92rem;box-shadow:0 14px 40px rgba(0,0,0,.5);
+    opacity:0;transform:translateY(10px);pointer-events:none;transition:.22s
+  }
+  #toast.show{opacity:1;transform:none}
+  footer{border-top:1px solid var(--line);margin-top:10px;padding:22px 0 60px;position:relative;z-index:1}
+  .note{color:var(--dim);font-size:.87rem;max-width:70ch}
+  .note b{color:var(--frost)}
   @media (max-width:520px){
-    header{padding:44px 0 26px}
-    .card{padding:20px 18px}
+    .topbar .wrap{height:56px;gap:8px}
+    .brand span.name{display:none}
+    .screen{padding:20px 0 80px}
+    .card{padding:15px}
+    .btn{flex:1 1 auto}
   }
 </style>
 </head>
 <body>
 
-<header>
+<div class="topbar">
   <div class="wrap">
-    <span class="eyebrow">מדריך כלים · מחקר מניות</span>
-    <h1>כלי מחקר מניות — מה כל אחד עושה, ולמי הוא מתאים</h1>
-    <p class="lede">עשרה כלים למחקר חברות וניתוח פיננסי. לכל כלי כתוב למי הוא מתאים, מתי כדאי להשתמש בו, ובעיקר — מה עדיין צריך לבדוק לבד.</p>
+    <div class="brand"><span class="mark">₪</span><span class="name">שולחן מחקר</span></div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-screen="start" aria-selected="true">התחלה</button>
+      <button class="tab" role="tab" data-screen="tools" aria-selected="false">הכלים</button>
+      <button class="tab" role="tab" data-screen="log" aria-selected="false">היומן שלי<span class="badge" id="logCount" hidden>0</span></button>
+    </div>
   </div>
-</header>
+</div>
 
-<main class="wrap">
-  <div class="filters" role="group" aria-label="סינון לפי סוג משתמש">
-    <button class="chip" type="button" data-filter="all" aria-pressed="true">הכל</button>
-    <button class="chip" type="button" data-filter="retail" aria-pressed="false">משקיע פרטי</button>
-    <button class="chip" type="button" data-filter="pro" aria-pressed="false">עבודה מקצועית</button>
-    <button class="chip" type="button" data-filter="industry" aria-pressed="false">תעשייה ורגולציה</button>
+<!-- ══════════ START ══════════ -->
+<section class="screen active" id="screen-start">
+  <div class="wrap">
+    <span class="eyebrow">שולחן עבודה למחקר מניות</span>
+    <h1>מה המצב שלך עכשיו?</h1>
+    <p class="lede">בוחרים מצב, מקבלים פרומפט מוכן להעתקה, עוברים צ'קליסט אימות ושומרים את התזה ביומן. הכל נשמר במכשיר שלך בלבד.</p>
+
+    <div class="sits" id="sits"></div>
+
+    <div class="card rules">
+      <h2 class="section-title" style="margin-top:0"><span class="n">!</span>חמישה כללים לפני שמסתמכים על תשובה</h2>
+      <ul>
+        <li><b>כל מספר מאומת מול המקור.</b> דוח כספי, 10-Q/10-K או הודעה רשמית — לא מול הסיכום.</li>
+        <li><b>AI ממציא מספרים בביטחון מלא.</b> "נשמע הגיוני" הוא לא מקור.</li>
+        <li><b>אין כאן המלצת קנייה או מכירה.</b> גם אם התשובה נשמעת נחרצת — ההחלטה שלך.</li>
+        <li><b>לא מדביקים מידע אישי, סודי או מסמכי לקוח</b> לתוך צ'אט.</li>
+        <li><b>לפני כניסה לפוזיציה — כתוב מה יגרום לך לצאת.</b> אין תשובה? אין תזה.</li>
+      </ul>
+    </div>
   </div>
-  <p class="count" id="count" aria-live="polite"></p>
+</section>
 
-  <section class="grid" id="grid">
+<!-- ══════════ TOOL ══════════ -->
+<section class="screen" id="screen-tool">
+  <div class="wrap">
+    <button class="back" id="backBtn">→ חזרה</button>
 
-    <article class="card" data-cat="retail">
-      <div class="card-top"><span class="num">01</span><span class="tag">Retail relevant</span></div>
-      <h2>Equity Research</h2>
-      <p class="tagline">הכלי המרכזי למחקר מניות</p>
-      <p class="desc">מרכז עבודה שלם למחקר חברה: earnings, initiating coverage, screen, sector, thesis, catalysts, model update ו־morning note.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>משקיע פרטי שרוצה לעבוד כמו אנליסט</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>כשיש מניה שרוצים להבין לעומק, עם דוחות, שיחת משקיעים ותזה מסודרת.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>זה לא אומר אם לקנות. זה מסביר מה השתנה, מה הסיכונים ומה צריך לבדוק.</dd></div>
+    <div class="card">
+      <div class="tool-head">
+        <span class="num" id="toolNum">01</span>
+        <span class="tag" id="toolTag"></span>
+      </div>
+      <h2 class="tool-name" id="toolName"></h2>
+      <p class="tool-tagline" id="toolTagline"></p>
+      <p class="tool-desc" id="toolDesc"></p>
+      <dl class="meta">
+        <div><dt>למי זה מתאים</dt><dd id="toolWho"></dd></div>
+        <div><dt>מתי להשתמש</dt><dd id="toolWhen"></dd></div>
+        <div class="warn"><dt>מה לבדוק</dt><dd id="toolCheck"></dd></div>
       </dl>
-    </article>
+    </div>
 
-    <article class="card" data-cat="retail">
-      <div class="card-top"><span class="num">02</span><span class="tag">Retail relevant · Agent</span></div>
-      <h2>Earnings Reviewer</h2>
-      <p class="tagline">הכלי הכי חד אחרי דוחות</p>
-      <p class="desc">קורא תוצאות, transcript ושיחת משקיעים, ומחזיר את השינויים החשובים: הכנסות, guidance, סיכונים ומה לעדכן במודל.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>מי שמחזיק מניות ועוקב אחרי רבעונים</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>חברה פרסמה דוח ורוצים להבין מהר אם הסיפור השתנה.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>עדיין בודקים את המספרים הקריטיים ידנית. Claude עוזר לקרוא, לא מחליט בשבילך.</dd></div>
-      </dl>
-    </article>
+    <h2 class="section-title"><span class="n">1</span>מלא את הפרטים</h2>
+    <p class="hint">כל שדה שתשאיר ריק פשוט יושמט מהפרומפט. ככל שתיתן יותר הקשר — התשובה תהיה פחות כללית.</p>
+    <div class="card"><div class="fields" id="fields"></div></div>
 
-    <article class="card" data-cat="retail">
-      <div class="card-top"><span class="num">03</span><span class="tag">Retail relevant · Skill bundle</span></div>
-      <h2>Financial Analysis</h2>
-      <p class="tagline">המתמטיקה: DCF, comps ומודלים</p>
-      <p class="desc">עוזר עם DCF, comps, three-statement models, audits ועבודה ישירות מול Excel.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>מי שרוצה להבין שווי ולא רק לקרוא תקציר</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>כשצריך ניתוח מספרי, השוואת מכפילים או ביקורת על מודל קיים.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>ההנחות הן הסיפור. כל נוסחה וטווח שווי צריכים בדיקה אנושית.</dd></div>
-      </dl>
-    </article>
+    <h2 class="section-title"><span class="n">2</span>הפרומפט שלך</h2>
+    <p class="hint">מתעדכן תוך כדי הקלדה. העתק והדבק ב-Claude, ותצרף את הדוח או ה-transcript כקובץ.</p>
+    <div class="card">
+      <div class="prompt-box" id="promptBox"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="copyBtn">העתק פרומפט</button>
+        <a class="btn btn-ghost" id="openClaude" target="_blank" rel="noopener">פתח ב-Claude ↗</a>
+      </div>
+    </div>
 
-    <article class="card" data-cat="retail">
-      <div class="card-top"><span class="num">04</span><span class="tag">Retail relevant · Agent</span></div>
-      <h2>Market Researcher</h2>
-      <p class="tagline">מבט רחב על סקטור או תמה</p>
-      <p class="desc">ממפה סקטור, משווה peers, מזהה תמות ומחזיר תמונת שוק לפני שנכנסים לחברה ספציפית.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>משקיע שרוצה למצוא רעיונות או להבין תחום</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>כשלא יודעים איפה להתחיל ורוצים להבין מי השחקנים ומה הכיוון.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>זו מפת מחקר ראשונית, לא המלצת קנייה או מכירה.</dd></div>
-      </dl>
-    </article>
+    <h2 class="section-title"><span class="n">3</span>צ'קליסט אימות</h2>
+    <p class="hint">אחרי שקיבלת תשובה — עבור על זה לפני שאתה מסיק מסקנה. הסימונים נשמרים עם הרשומה ביומן.</p>
+    <div class="card">
+      <div class="progress"><i id="progBar"></i></div>
+      <div class="checks" id="checks"></div>
+    </div>
 
-    <article class="card" data-cat="pro">
-      <div class="card-top"><span class="num">05</span><span class="tag">Professional workflow</span></div>
-      <h2>Pitch Agent</h2>
-      <p class="tagline">הפיכת מחקר לפיץ׳</p>
-      <p class="desc">הופך מחקר גולמי לסיפור: למה ההזדמנות מעניינת, מה הסיכון ומה הטיעון המרכזי.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>אנליסט / בנקאות השקעות / יועץ</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>יותר מתאים למצגות ועסקאות מאשר לניהול תיק אישי.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>פיץ׳ יכול להישמע משכנע מדי. מפרידים עובדות, הנחות ודעה.</dd></div>
-      </dl>
-    </article>
+    <h2 class="section-title"><span class="n">4</span>שמור ביומן המחקר</h2>
+    <p class="hint">זה החלק שמשתלם בעוד רבעון: מה חשבת, למה, ומה היה מפריך את זה.</p>
+    <div class="card">
+      <div class="fields">
+        <div class="field">
+          <label for="jThesis">התזה שלי במשפט אחד <span class="sub">מה אני חושב שקורה כאן</span></label>
+          <textarea id="jThesis" placeholder="לדוגמה: הצמיחה מואטת אבל המרווח מתרחב, והשוק מתמחר רק את ההאטה."></textarea>
+        </div>
+        <div class="field">
+          <label for="jInvalidate">מה יגרום לי לשנות דעה <span class="sub">אירוע או מספר קונקרטי</span></label>
+          <textarea id="jInvalidate" placeholder="לדוגמה: מרווח גולמי מתחת ל-40% שני רבעונים ברצף, או אובדן הלקוח הגדול."></textarea>
+        </div>
+        <div class="field">
+          <label for="jVerify">מספרים שעדיין לא אימתתי <span class="sub">מה נשאר לבדוק מול הדוח</span></label>
+          <textarea id="jVerify" placeholder="לדוגמה: תזרים חופשי בפועל, מספר המניות המדולל, יתרת החוב."></textarea>
+        </div>
+        <div class="field">
+          <label for="jDate">האירוע הבא לעקוב אחריו <span class="sub">דוח, כנס, החלטה רגולטורית</span></label>
+          <input type="date" id="jDate" />
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">שמור ביומן</button>
+        <button class="btn btn-quiet" id="clearBtn">נקה טופס</button>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <article class="card" data-cat="pro">
-      <div class="card-top"><span class="num">06</span><span class="tag">Professional workflow</span></div>
-      <h2>Meeting Prep</h2>
-      <p class="tagline">הכנה לפגישות</p>
-      <p class="desc">מכין רקע, שאלות, נקודות סיכון וסדר יום לפני שיחה עם חברה, משקיע או לקוח פיננסי.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>צוות פיננסים / יועצים / אנשי מכירות</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>לפני פגישה מקצועית שבה צריך להגיע עם שאלות ולא עם תחושת בטן.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>לא להכניס מידע רגיש בלי צורך.</dd></div>
-      </dl>
-    </article>
+<!-- ══════════ TOOLS ══════════ -->
+<section class="screen" id="screen-tools">
+  <div class="wrap">
+    <h1>עשרת הכלים</h1>
+    <p class="lede">לכל כלי: מה הוא עושה, למי הוא מתאים, ומה עדיין צריך לבדוק לבד. לחיצה פותחת את שולחן העבודה שלו.</p>
+    <div class="filters" role="group" aria-label="סינון">
+      <button class="chip" data-filter="all" aria-pressed="true">הכל</button>
+      <button class="chip" data-filter="retail" aria-pressed="false">משקיע פרטי</button>
+      <button class="chip" data-filter="pro" aria-pressed="false">עבודה מקצועית</button>
+      <button class="chip" data-filter="industry" aria-pressed="false">תעשייה ורגולציה</button>
+    </div>
+    <p class="hint" id="count"></p>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
 
-    <article class="card" data-cat="pro">
-      <div class="card-top"><span class="num">07</span><span class="tag">Professional workflow</span></div>
-      <h2>Model Builder</h2>
-      <p class="tagline">בניית מודל פיננסי</p>
-      <p class="desc">עוזר לבנות מבנה למודל הכנסות, רווחיות, תרחישים ותחזיות.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>אנליסט / צוות כספים</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>כשצריך גיליון עבודה שמתחיל מסודר במקום להמציא Excel מאפס.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>המודל הוא התחלה. ההנחות הן העבודה האמיתית.</dd></div>
-      </dl>
-    </article>
-
-    <article class="card" data-cat="pro">
-      <div class="card-top"><span class="num">08</span><span class="tag">Professional workflow</span></div>
-      <h2>Valuation Reviewer</h2>
-      <p class="tagline">ביקורת שווי</p>
-      <p class="desc">בודק אם סיפור השווי, ה־DCF, המכפילים וההשוואות באמת מחזיקים מים.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>אנליסט / משקיע מתקדם</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>לפני שמסתמכים על מודל, מצגת או תזה פיננסית.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>ביקורת טובה תלויה באיכות הנתונים שהכנסת.</dd></div>
-      </dl>
-    </article>
-
-    <article class="card" data-cat="industry">
-      <div class="card-top"><span class="num">09</span><span class="tag">Industry workflow</span></div>
-      <h2>Investment Banking</h2>
-      <p class="tagline">עבודת בנקאות השקעות</p>
-      <p class="desc">עוזר בעבודות כמו pitch decks, בדיקות עסקה, חומרים למשקיעים ומבנה ניתוח לעסקאות.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>בנקאי השקעות / צוות עסקאות</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>יותר לתעשייה ולצוותי עסקאות, פחות למשקיע פרטי בבית.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>לא רלוונטי לרוב האנשים אלא אם עובדים על עסקה אמיתית.</dd></div>
-      </dl>
-    </article>
-
-    <article class="card" data-cat="industry">
-      <div class="card-top"><span class="num">10</span><span class="tag">Compliance workflow</span></div>
-      <h2>KYC Screener</h2>
-      <p class="tagline">בדיקת זהות וסיכון</p>
-      <p class="desc">עוזר לסנן רקע, זהות, מסמכים וסימני סיכון בתהליכי KYC.</p>
-      <dl>
-        <div><dt>למי זה מתאים</dt><dd>צוות פיננסים / Compliance</dd></div>
-        <div><dt>מתי להשתמש</dt><dd>עבודה מקצועית של גוף פיננסי, לא שימוש רגיל של משקיע פרטי.</dd></div>
-        <div class="row-check"><dt>מה לבדוק</dt><dd>רגולציה ופרטיות קודם. לא משתמשים בזה בלי תהליך מאושר.</dd></div>
-      </dl>
-    </article>
-
-  </section>
-</main>
+<!-- ══════════ LOG ══════════ -->
+<section class="screen" id="screen-log">
+  <div class="wrap">
+    <h1>יומן המחקר שלי</h1>
+    <p class="lede">כל מה ששמרת, ממוין לפי האירוע הקרוב ביותר. נשמר במכשיר שלך (localStorage) — לא נשלח לשום מקום.</p>
+    <div class="log-actions">
+      <button class="btn btn-quiet btn-sm" id="exportMd">ייצוא כ-Markdown</button>
+      <button class="btn btn-quiet btn-sm" id="exportJson">גיבוי JSON</button>
+      <button class="btn btn-quiet btn-sm" id="importBtn">שחזור מגיבוי</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden />
+    </div>
+    <div id="entries"></div>
+  </div>
+</section>
 
 <footer>
   <div class="wrap">
-    <p class="note"><strong>הבהרה:</strong> הדף הזה הוא מדריך כלים בלבד ואינו ייעוץ השקעות, שיווק השקעות או המלצה לקנות או למכור נייר ערך כלשהו. כל כלי כאן עוזר לקרוא, לארגן ולנתח מידע — ההחלטה, האחריות ובדיקת המספרים נשארות אצלך.</p>
-    <a class="back" href="/">← חזרה לדף הבית</a>
+    <p class="note"><b>הבהרה:</b> הדף הוא כלי עבודה לארגון מחקר ואינו ייעוץ השקעות, שיווק השקעות או המלצה לקנות או למכור נייר ערך. הפרומפטים והצ'קליסטים עוזרים לקרוא ולאמת מידע — ההחלטה, האחריות ובדיקת המספרים נשארות אצלך. הנתונים נשמרים מקומית בדפדפן ונמחקים אם תנקה את נתוני האתר, לכן שמור גיבוי.</p>
   </div>
 </footer>
 
-<script>
-  (function () {
-    var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
-    var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
-    var count = document.getElementById('count');
+<div id="toast" role="status" aria-live="polite"></div>
 
-    function apply(filter) {
-      var shown = 0;
-      cards.forEach(function (card) {
-        var match = filter === 'all' || card.getAttribute('data-cat') === filter;
-        card.classList.toggle('hidden', !match);
-        if (match) shown++;
-      });
-      count.textContent = 'מוצגים ' + shown + ' מתוך ' + cards.length + ' כלים';
-      chips.forEach(function (chip) {
-        chip.setAttribute('aria-pressed', String(chip.getAttribute('data-filter') === filter));
-      });
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   נתוני הכלים: שדות, פרומפט וצ'קליסט אימות לכל כלי
+   ══════════════════════════════════════════════════════════════════ */
+var FIELDS = {
+  ticker:    {label:'חברה או טיקר', sub:'שם החברה או הסימול', type:'text', ph:'NVDA / טבע / ICL'},
+  period:    {label:'תקופה', sub:'איזה רבעון או שנה', type:'text', ph:'Q3 2026'},
+  status:    {label:'איפה אני עומד', type:'select', options:['שוקל להיכנס','מחזיק','לא מחזיק, רק עוקב','שוקל למכור']},
+  horizon:   {label:'אופק ההשקעה', type:'select', options:['עד שנה','1-3 שנים','3 שנים ומעלה','טרייד קצר']},
+  context:   {label:'מה אני כבר יודע, ומה הכי מטריד אותי', sub:'ההקשר הזה משנה את איכות התשובה יותר מכל דבר אחר', type:'textarea', ph:'לדוגמה: קניתי אחרי הדוח הקודם בגלל צמיחה במנוי; מטריד אותי שהמלאי עלה והלקוח הגדול מצמצם.'},
+  sources:   {label:'מקורות שיש לי', sub:'קישורים או שמות קבצים שתצרף לצ׳אט', type:'textarea', ph:'דוח רבעוני, transcript של שיחת המשקיעים, מצגת למשקיעים'},
+  sector:    {label:'סקטור או תמה', type:'text', ph:'שבבים לרכב חשמלי / ביטוח דיגיטלי'},
+  peers:     {label:'חברות להשוואה', sub:'peers שאתה כבר מכיר', type:'text', ph:'AMD, INTC, QCOM'},
+  model:     {label:'המודל וההנחות המרכזיות', type:'textarea', ph:'צמיחת הכנסות 12% לשנה, מרווח תפעולי מתייצב על 18%, WACC 9%'},
+  valuation: {label:'טווח השווי והשיטה', type:'textarea', ph:'DCF נותן 180-210 דולר; מכפיל רווח 22 מול ממוצע ענף 17'},
+  audience:  {label:'למי מיועד הפיץ׳', type:'text', ph:'ועדת השקעות / לקוח פרטי / משקיע מוסדי'},
+  meeting:   {label:'עם מי הפגישה ומה המטרה', type:'text', ph:'סמנכ"ל כספים של החברה — להבין את תוכנית ההשקעות'},
+  deal:      {label:'העסקה והמנדט', type:'textarea', ph:'מכירת חברת תוכנה B2B בהיקף 200 מיליון דולר, צד מוכר'},
+  subject:   {label:'מה נבדק', sub:'תיאור כללי בלבד — בלי שמות, מספרי זהות או מסמכים אישיים', type:'textarea', ph:'לקוח עסקי חדש מתחום הסחר הבינלאומי, מבנה בעלות רב-שכבתי'}
+};
+
+var GUARD = 'כללים: אל תמליץ לי לקנות, למכור או להחזיק. אם מספר לא מופיע במקורות שנתתי — כתוב "לא ידוע" במקום לנחש. ליד כל מספר ציין מאיפה הוא. סמן בבירור מה עובדה, מה הערכה שלך ומה דעה.';
+
+var TOOLS = [
+  {
+    id:'equity-research', num:'01', cat:'retail', tag:'Retail relevant',
+    name:'Equity Research', tagline:'הכלי המרכזי למחקר מניות',
+    desc:'מרכז עבודה שלם למחקר חברה: earnings, initiating coverage, screen, sector, thesis, catalysts, model update ו־morning note.',
+    who:'משקיע פרטי שרוצה לעבוד כמו אנליסט',
+    when:'כשיש מניה שרוצים להבין לעומק, עם דוחות, שיחת משקיעים ותזה מסודרת.',
+    check:'זה לא אומר אם לקנות. זה מסביר מה השתנה, מה הסיכונים ומה צריך לבדוק.',
+    sit:{icon:'🔍', t:'רוצה להכיר חברה חדשה מאפס', s:'תמונה מלאה: מודל עסקי, מספרים, סיכונים ותזה'},
+    fields:['ticker','status','horizon','context','sources'],
+    prompt:[
+      'אני משקיע פרטי ורוצה להכיר לעומק את {{ticker}}. עזור לי לבנות תיק מחקר מסודר.',
+      '',
+      'איפה אני עומד: {{status}}',
+      'אופק ההשקעה: {{horizon}}',
+      'רקע ומה שמטריד אותי: {{context}}',
+      'מקורות שאני מצרף: {{sources}}',
+      '',
+      'החזר תשובה מובנית בסעיפים הבאים:',
+      '1. איך החברה מרוויחה כסף — במשפטים פשוטים, כולל פילוח ההכנסות והלקוחות.',
+      '2. המספרים שחשובים כאן — אילו 5 מדדים באמת קובעים בעסק הזה ומה הם היום מול לפני שנה.',
+      '3. מה מניע את התוצאות קדימה — הביקוש, התמחור, המרווחים, ההשקעות ההוניות.',
+      '4. התחרות — מי מולם, מה היתרון בר-הקיימא אם יש, ואיפה הוא נשחק.',
+      '5. סיכונים — שלושת הגדולים, ולכל אחד: איך הוא ייראה במספרים כשהוא מתממש.',
+      '6. תזת השור מול תזת הדוב — הצג את שתיהן בכוח מלא, בלי להכריע.',
+      '7. קטליזטורים ותאריכים — מה צפוי בחודשים הקרובים ומה כל אירוע יכול לשנות.',
+      '8. מה אני חייב לאמת בעצמי — רשימה קצרה של מספרים והיכן בדיוק לבדוק אותם.',
+      '',
+      GUARD
+    ],
+    checks:[
+      'השוויתי את המספרים המרכזיים מול הדוח הכספי עצמו, לא רק מול הסיכום',
+      'הבנתי מאיפה מגיעה ההכנסה בפועל — לא רק את הסיפור השיווקי',
+      'קראתי את סעיף גורמי הסיכון בדוח השנתי',
+      'בדקתי מי המתחרים ומה קרה להם באותה תקופה',
+      'כתבתי מה יפריך את התזה שלי, לא רק מה תומך בה'
+    ]
+  },
+  {
+    id:'earnings-reviewer', num:'02', cat:'retail', tag:'Retail relevant · Agent',
+    name:'Earnings Reviewer', tagline:'הכלי הכי חד אחרי דוחות',
+    desc:'קורא תוצאות, transcript ושיחת משקיעים, ומחזיר את השינויים החשובים: הכנסות, guidance, סיכונים ומה לעדכן במודל.',
+    who:'מי שמחזיק מניות ועוקב אחרי רבעונים',
+    when:'חברה פרסמה דוח ורוצים להבין מהר אם הסיפור השתנה.',
+    check:'עדיין בודקים את המספרים הקריטיים ידנית. Claude עוזר לקרוא, לא מחליט בשבילך.',
+    sit:{icon:'📊', t:'יצא דוח רבעוני לחברה שאני עוקב אחריה', s:'מה השתנה בפועל, מה ה-guidance ומה לעדכן'},
+    fields:['ticker','period','status','horizon','context','sources'],
+    prompt:[
+      'אני משקיע פרטי. עזור לי לנתח את דוח {{period}} של {{ticker}}.',
+      '',
+      'איפה אני עומד: {{status}}',
+      'אופק ההשקעה: {{horizon}}',
+      'מה אני כבר יודע ומה מטריד אותי: {{context}}',
+      'מקורות שאני מצרף: {{sources}}',
+      '',
+      'עבוד בסדר הזה:',
+      '1. מה קרה בפועל — הכנסות, רווח גולמי ותפעולי, תזרים חופשי: המספר מול הרבעון המקביל ומול הצפי.',
+      '2. Guidance — מה ההנחיה החדשה, מה הייתה קודם, ומה בדיוק זה משנה.',
+      '3. שלושת הדברים שבאמת שינו את הסיפור — לא סיכום של כל מה שנאמר.',
+      '4. מה ההנהלה לא אמרה — שאלות שנשאלו ולא נענו, ניסוחים שהתרככו לעומת הרבעון הקודם.',
+      '5. דגלים אדומים — דילול מניות, מלאי, חובות, ריכוז לקוחות, שינוי בהכרה בהכנסה, חד-פעמיים.',
+      '6. מה לעדכן במודל — אילו הנחות ספציפיות צריכות לזוז, לאיזה כיוון ובאיזה סדר גודל.',
+      '7. מה אני צריך לאמת בעצמי — מספרים והיכן בדיוק הם מופיעים בדוח.',
+      '8. מה יפריך את התזה שלי — אירועים או מספרים שיגידו לי שטעיתי.',
+      '',
+      GUARD
+    ],
+    checks:[
+      'אימתתי הכנסות ורווח מול הדוח הרשמי, לא מול כתבה או סיכום',
+      'השוויתי את ה-guidance החדש לקודם במילים שלהם',
+      'בדקתי תזרים מזומנים חופשי ולא רק רווח חשבונאי',
+      'בדקתי דילול: מספר המניות המדולל מול הרבעון המקביל',
+      'החלטתי אם התזה שלי השתנתה — וכתבתי למה'
+    ]
+  },
+  {
+    id:'financial-analysis', num:'03', cat:'retail', tag:'Retail relevant · Skill bundle',
+    name:'Financial Analysis', tagline:'המתמטיקה: DCF, comps ומודלים',
+    desc:'עוזר עם DCF, comps, three-statement models, audits ועבודה ישירות מול Excel.',
+    who:'מי שרוצה להבין שווי ולא רק לקרוא תקציר',
+    when:'כשצריך ניתוח מספרי, השוואת מכפילים או ביקורת על מודל קיים.',
+    check:'ההנחות הן הסיפור. כל נוסחה וטווח שווי צריכים בדיקה אנושית.',
+    sit:{icon:'🧮', t:'רוצה להבין כמה החברה באמת שווה', s:'DCF, מכפילים והשוואה לחברות דומות'},
+    fields:['ticker','peers','horizon','context','sources'],
+    prompt:[
+      'עזור לי להעריך את השווי של {{ticker}} בצורה מסודרת ושקופה.',
+      '',
+      'חברות להשוואה שאני מכיר: {{peers}}',
+      'אופק ההשקעה: {{horizon}}',
+      'רקע ומה שמטריד אותי: {{context}}',
+      'מקורות שאני מצרף: {{sources}}',
+      '',
+      'בנה את התשובה כך:',
+      '1. איזו שיטת הערכה מתאימה לעסק הזה ולמה — ואיזו שיטה תיתן כאן תוצאה מטעה.',
+      '2. DCF — פרט את ההנחות אחת-אחת: צמיחה, מרווח, השקעות הוניות, הון חוזר, WACC, צמיחה מתמדת. לכל הנחה: על מה היא מבוססת.',
+      '3. טווח שווי בשלושה תרחישים — שמרני, בסיס ואופטימי, עם השווי למניה בכל אחד.',
+      '4. ניתוח רגישות — אילו שתי הנחות מזיזות הכי הרבה את התוצאה, וכמה.',
+      '5. מכפילים — השוואה ל-peers עם המכפילים הרלוונטיים, כולל הסבר למה קיים פער.',
+      '6. ההנחה המסוכנת ביותר — זו שאם היא שגויה, כל המספר מתפרק.',
+      '7. איך אאמת את זה בעצמי — אילו נתונים לשלוף ומאיפה.',
+      '',
+      'הצג את החישוב שלב אחר שלב כדי שאוכל לשחזר אותו בגיליון, ואל תעגל בלי לציין.',
+      GUARD
+    ],
+    checks:[
+      'עברתי על כל הנחה בנפרד ושאלתי על מה היא מבוססת',
+      'בדקתי את הרגישות: שיניתי את ההנחה המרכזית וראיתי מה קורה לשווי',
+      'השוויתי את ההנחות לביצועים ההיסטוריים בפועל של החברה',
+      'ה-peers באמת דומים בגודל, במודל העסקי ובשלב הצמיחה',
+      'שחזרתי לפחות חישוב אחד בעצמי ויצא אותו דבר'
+    ]
+  },
+  {
+    id:'market-researcher', num:'04', cat:'retail', tag:'Retail relevant · Agent',
+    name:'Market Researcher', tagline:'מבט רחב על סקטור או תמה',
+    desc:'ממפה סקטור, משווה peers, מזהה תמות ומחזיר תמונת שוק לפני שנכנסים לחברה ספציפית.',
+    who:'משקיע שרוצה למצוא רעיונות או להבין תחום',
+    when:'כשלא יודעים איפה להתחיל ורוצים להבין מי השחקנים ומה הכיוון.',
+    check:'זו מפת מחקר ראשונית, לא המלצת קנייה או מכירה.',
+    sit:{icon:'🗺️', t:'רוצה להבין סקטור או למצוא רעיונות', s:'מי השחקנים, לאן הכסף זורם ומה הסיכון בתחום'},
+    fields:['sector','peers','horizon','context'],
+    prompt:[
+      'אני רוצה להבין את התחום: {{sector}}. עזור לי לבנות מפת שוק לפני שאני נכנס לחברה ספציפית.',
+      '',
+      'חברות שאני כבר מכיר בתחום: {{peers}}',
+      'אופק ההשקעה: {{horizon}}',
+      'מה כבר ידוע לי ומה אני מנסה להבין: {{context}}',
+      '',
+      'בנה את התשובה כך:',
+      '1. שרשרת הערך — מי מרוויח בכל שלב, ואיפה נמצא כוח התמחור.',
+      '2. מפת השחקנים — מובילים, מאתגרים ונישה, עם מה שמבדל כל אחד.',
+      '3. השוואה מהירה — טבלה של השחקנים המרכזיים: גודל, צמיחה, רווחיות, מכפיל. סמן איפה הנתון הוא הערכה.',
+      '4. מה מניע את התחום — ביקוש, רגולציה, טכנולוגיה, מחזוריות. מה מזה מבני ומה זמני.',
+      '5. מה יכול לשבור את התחום — התפתחות שתהפוך את התזה ללא רלוונטית.',
+      '6. איפה הקונצנזוס — מה כולם כבר מניחים, ואיפה יכולה להיות טעות בהנחה הזו.',
+      '7. שלוש חברות ששוות מחקר מעמיק, ולכל אחת: מה בדיוק לבדוק אצלה ראשון.',
+      '',
+      GUARD
+    ],
+    checks:[
+      'הבנתי את שרשרת הערך ולא רק שמות של חברות',
+      'בדקתי אם הצמיחה בתחום מבנית או מחזורית',
+      'בדקתי את המספרים בטבלת ההשוואה מול מקור אמיתי',
+      'זיהיתי מה כבר מתומחר בשוק ומה לא',
+      'בחרתי חברה אחת להעמיק בה במקום לפזר'
+    ]
+  },
+  {
+    id:'pitch-agent', num:'05', cat:'pro', tag:'Professional workflow',
+    name:'Pitch Agent', tagline:'הפיכת מחקר לפיץ׳',
+    desc:'הופך מחקר גולמי לסיפור: למה ההזדמנות מעניינת, מה הסיכון ומה הטיעון המרכזי.',
+    who:'אנליסט / בנקאות השקעות / יועץ',
+    when:'יותר מתאים למצגות ועסקאות מאשר לניהול תיק אישי.',
+    check:'פיץ׳ יכול להישמע משכנע מדי. מפרידים עובדות, הנחות ודעה.',
+    sit:{icon:'🎤', t:'צריך להציג מחקר לאנשים אחרים', s:'להפוך ניתוח לסיפור עם טיעון וסיכונים'},
+    fields:['ticker','audience','context','sources'],
+    prompt:[
+      'עזור לי להפוך את המחקר על {{ticker}} לפיץ׳ מסודר.',
+      '',
+      'קהל היעד: {{audience}}',
+      'המחקר והמסקנות שלי עד כה: {{context}}',
+      'מקורות שאני מצרף: {{sources}}',
+      '',
+      'בנה כך:',
+      '1. הטיעון המרכזי בשתי שורות — מה השוק מפספס, ולמה דווקא עכשיו.',
+      '2. שלוש נקודות תמיכה, כל אחת עם הראיה המספרית שמאחוריה.',
+      '3. הפרדה מפורשת: מה עובדה מתועדת, מה הנחה שלי, ומה פרשנות.',
+      '4. תזת הנגד הכי חזקה שקיימת — ואיך הייתי עונה לה בכנות.',
+      '5. הסיכונים שחייבים להיאמר לקהל הזה, גם אם הם מחלישים את הפיץ׳.',
+      '6. שלוש השאלות הקשות שישאלו אותי, עם תשובה קצרה לכל אחת.',
+      '7. מבנה מומלץ למצגת — כותרת לכל שקף ומה נמצא בה.',
+      '',
+      'אל תנסח שום דבר כוודאי אם הוא הנחה. אל תמציא נתון כדי לחזק טיעון.'
+    ],
+    checks:[
+      'כל מספר במצגת מקושר למקור שאני יכול להראות',
+      'הפרדתי בבירור בין עובדה, הנחה ודעה',
+      'תזת הנגד מוצגת בכוח מלא ולא כקש',
+      'הסיכונים נאמרים במפורש ולא נקברים בהערת שוליים',
+      'הכנתי תשובה לשלוש השאלות הקשות'
+    ]
+  },
+  {
+    id:'meeting-prep', num:'06', cat:'pro', tag:'Professional workflow',
+    name:'Meeting Prep', tagline:'הכנה לפגישות',
+    desc:'מכין רקע, שאלות, נקודות סיכון וסדר יום לפני שיחה עם חברה, משקיע או לקוח פיננסי.',
+    who:'צוות פיננסים / יועצים / אנשי מכירות',
+    when:'לפני פגישה מקצועית שבה צריך להגיע עם שאלות ולא עם תחושת בטן.',
+    check:'לא להכניס מידע רגיש בלי צורך.',
+    sit:{icon:'🤝', t:'מתכונן לפגישה מקצועית', s:'רקע, סדר יום והשאלות שחייבים לשאול'},
+    fields:['meeting','ticker','context'],
+    prompt:[
+      'עזור לי להתכונן לפגישה: {{meeting}}',
+      '',
+      'החברה או הנושא: {{ticker}}',
+      'רקע והמטרה שלי מהפגישה: {{context}}',
+      '',
+      'הכן לי:',
+      '1. תדריך רקע קצר — מה חייבים לדעת לפני שנכנסים.',
+      '2. סדר יום מוצע עם הקצאת זמן, מהחשוב לפחות חשוב.',
+      '3. עשר שאלות מדורגות — כאלה שלא ניתן לענות עליהן ב"כן" או "לא".',
+      '4. שלוש שאלות המשך לכל תשובה מתחמקת שצפויה.',
+      '5. נקודות רגישות — מה עלול לעלות ואיך להגיב.',
+      '6. מה אני רוצה לצאת איתו — הגדרה של פגישה מוצלחת בשורה אחת.',
+      '',
+      'הערה: לא סיפקתי מידע אישי או חסוי, ואל תבקש כזה.'
+    ],
+    checks:[
+      'לא הכנסתי לצ׳אט מידע אישי, חסוי או מסמכי לקוח',
+      'הרקע נבדק מול מקור עדכני ולא מהזיכרון של המודל',
+      'יש לי שלוש שאלות שחייבות תשובה בפגישה הזו',
+      'ידוע לי מה מגדיר הצלחה בפגישה',
+      'הכנתי תגובה לנקודות הרגישות'
+    ]
+  },
+  {
+    id:'model-builder', num:'07', cat:'pro', tag:'Professional workflow',
+    name:'Model Builder', tagline:'בניית מודל פיננסי',
+    desc:'עוזר לבנות מבנה למודל הכנסות, רווחיות, תרחישים ותחזיות.',
+    who:'אנליסט / צוות כספים',
+    when:'כשצריך גיליון עבודה שמתחיל מסודר במקום להמציא Excel מאפס.',
+    check:'המודל הוא התחלה. ההנחות הן העבודה האמיתית.',
+    sit:{icon:'📐', t:'צריך לבנות מודל תחזית', s:'מבנה גיליון, נוסחאות ותרחישים'},
+    fields:['ticker','horizon','model','context'],
+    prompt:[
+      'עזור לי לבנות מודל פיננסי ל-{{ticker}}.',
+      '',
+      'טווח התחזית: {{horizon}}',
+      'ההנחות שאני מתחיל איתן: {{model}}',
+      'רקע ומה שהמודל צריך לענות עליו: {{context}}',
+      '',
+      'תן לי:',
+      '1. מבנה הגיליון — אילו לשוניות, ומה נמצא בכל אחת. הפרד קלט, חישוב ופלט.',
+      '2. מנוע ההכנסות — פרק אותן למרכיבים שאפשר באמת להעריך (כמות × מחיר, לקוחות × ARPU).',
+      '3. שורות המודל לפי סדר, עם הנוסחה של כל שורה במילים ובתחביר Excel.',
+      '4. טבלת הנחות מרוכזת — כל הנחה עם ערך בסיס, טווח סביר והמקור שלה.',
+      '5. שלושה תרחישים ומה משתנה בכל אחד.',
+      '6. בדיקות שפיות מובנות — מאזן שמתאזן, תזרים שמתחבר, מרווחים בטווח היסטורי.',
+      '7. הטעויות הנפוצות במודל מהסוג הזה ואיך להימנע מהן.',
+      '',
+      'אל תמציא נתונים היסטוריים. איפה שחסר נתון — סמן את התא כקלט שאני צריך למלא.'
+    ],
+    checks:[
+      'הפרדתי קלט מחישוב — אין מספרים קשיחים בתוך נוסחאות',
+      'כל הנחה מרוכזת במקום אחד ומתועדת עם מקור',
+      'בדיקות השפיות עוברות: המאזן מתאזן והתזרים מתחבר',
+      'התרחיש השמרני באמת שמרני ולא אופטימי בתחפושת',
+      'השוויתי את התחזית לביצועים ההיסטוריים בפועל'
+    ]
+  },
+  {
+    id:'valuation-reviewer', num:'08', cat:'pro', tag:'Professional workflow',
+    name:'Valuation Reviewer', tagline:'ביקורת שווי',
+    desc:'בודק אם סיפור השווי, ה־DCF, המכפילים וההשוואות באמת מחזיקים מים.',
+    who:'אנליסט / משקיע מתקדם',
+    when:'לפני שמסתמכים על מודל, מצגת או תזה פיננסית.',
+    check:'ביקורת טובה תלויה באיכות הנתונים שהכנסת.',
+    sit:{icon:'🧪', t:'יש לי מודל או תזה ואני רוצה ביקורת', s:'איפה החישוב או ההיגיון נשברים'},
+    fields:['ticker','valuation','model','context'],
+    prompt:[
+      'בצע ביקורת ביקורתית על הערכת השווי שלי ל-{{ticker}}. תפקידך למצוא איפה אני טועה, לא להסכים איתי.',
+      '',
+      'טווח השווי והשיטה: {{valuation}}',
+      'ההנחות המרכזיות: {{model}}',
+      'רקע נוסף: {{context}}',
+      '',
+      'עבור על זה כך:',
+      '1. האם השיטה מתאימה לעסק הזה — ואם לא, מה הייתה מתאימה יותר.',
+      '2. כל הנחה בנפרד: סבירה, אגרסיבית או שמרנית, ומול מה השוואת אותה.',
+      '3. חוסר עקביות פנימי — הנחות שסותרות זו את זו או את ההיסטוריה של החברה.',
+      '4. מה חסר לגמרי — דילול, מלאי, חוב, התחייבויות חוץ-מאזניות, עונתיות, מס.',
+      '5. ההנחה שהכי מזיזה את התוצאה — וכמה משתנה השווי אם היא זזה ב-10%.',
+      '6. השוואת ה-peers — האם הן באמת ברות השוואה, ואם לא, למה.',
+      '7. שלוש הבעיות החמורות ביותר, מדורגות, עם מה לתקן בכל אחת.',
+      '',
+      'היה ישיר. אם המספר לא מחזיק מים — תגיד את זה בפירוש ותסביר למה.'
+    ],
+    checks:[
+      'הנתונים שהזנתי למודל נכונים — ביקורת על נתון שגוי חסרת ערך',
+      'בדקתי את שתי ההנחות הרגישות ביותר מול הביצועים ההיסטוריים',
+      'טיפלתי בכל אחת משלוש הבעיות החמורות, או הסברתי למה לא',
+      'ה-peers ברי השוואה באמת',
+      'עדכנתי את המודל אחרי הביקורת ולא רק קראתי אותה'
+    ]
+  },
+  {
+    id:'investment-banking', num:'09', cat:'industry', tag:'Industry workflow',
+    name:'Investment Banking', tagline:'עבודת בנקאות השקעות',
+    desc:'עוזר בעבודות כמו pitch decks, בדיקות עסקה, חומרים למשקיעים ומבנה ניתוח לעסקאות.',
+    who:'בנקאי השקעות / צוות עסקאות',
+    when:'יותר לתעשייה ולצוותי עסקאות, פחות למשקיע פרטי בבית.',
+    check:'לא רלוונטי לרוב האנשים אלא אם עובדים על עסקה אמיתית.',
+    sit:{icon:'🏦', t:'עובד על עסקה או חומרי עסקה', s:'מבנה ניתוח, חומרים למשקיעים ובדיקות'},
+    fields:['deal','context','sources'],
+    prompt:[
+      'אני עובד על עסקה ומבקש עזרה במבנה העבודה.',
+      '',
+      'העסקה והמנדט: {{deal}}',
+      'רקע ומה נדרש ממני עכשיו: {{context}}',
+      'חומרים שאני מצרף: {{sources}}',
+      '',
+      'תן לי:',
+      '1. מבנה הניתוח — אילו עבודות נדרשות, בסדר הנכון, ומה תלוי במה.',
+      '2. שיטות ההערכה המתאימות לעסקה הזו וסדר החשיבות ביניהן.',
+      '3. רשימת בדיקת נאותות ממוקדת לענף — מה קריטי כאן ולא במקום אחר.',
+      '4. שלד לחומרי המשקיעים — סעיפים והמסר של כל אחד.',
+      '5. סיכוני העסקה — מסחריים, משפטיים, אינטגרציה ותזמון.',
+      '6. מה הצד השני ילחץ עליו במשא ומתן ואיך להתכונן לזה מראש.',
+      '',
+      'הערה: לא סיפקתי חומר חסוי או מידע פנים. אל תבקש כזה ואל תניח נתונים שלא נתתי.'
+    ],
+    checks:[
+      'לא הכנסתי מידע חסוי, מידע פנים או חומר תחת NDA',
+      'העבודה עומדת בנהלי הציות והאישורים של הארגון',
+      'כל נתון בחומרים מאומת מול המקור הרשמי',
+      'הסיכונים המשפטיים עברו לגורם המקצועי המתאים',
+      'המבנה תואם את התבנית שהארגון עובד לפיה'
+    ]
+  },
+  {
+    id:'kyc-screener', num:'10', cat:'industry', tag:'Compliance workflow',
+    name:'KYC Screener', tagline:'בדיקת זהות וסיכון',
+    desc:'עוזר לסנן רקע, זהות, מסמכים וסימני סיכון בתהליכי KYC.',
+    who:'צוות פיננסים / Compliance',
+    when:'עבודה מקצועית של גוף פיננסי, לא שימוש רגיל של משקיע פרטי.',
+    check:'רגולציה ופרטיות קודם. לא משתמשים בזה בלי תהליך מאושר.',
+    sit:{icon:'🛡️', t:'עבודת ציות ובדיקת סיכון (KYC)', s:'מסגרת עבודה בלבד — לא בדיקה על אדם אמיתי'},
+    fields:['subject','context'],
+    prompt:[
+      'עזור לי לבנות מסגרת עבודה לבדיקת KYC. אני מבקש מתודולוגיה בלבד — לא בדיקה על אדם או ישות מזוהים.',
+      '',
+      'סוג המקרה (תיאור כללי): {{subject}}',
+      'הקשר רגולטורי ומה נדרש: {{context}}',
+      '',
+      'תן לי:',
+      '1. שלבי התהליך לפי הסדר, ומה תנאי המעבר בין שלב לשלב.',
+      '2. אילו מסמכים נדרשים בכל שלב ומה בודקים בכל מסמך.',
+      '3. סימני סיכון לפי קטגוריה — מבנה בעלות, גיאוגרפיה, מקור כספים, דפוסי פעילות.',
+      '4. שאלות הבהרה שיש להפנות ללקוח, מנוסחות עניינית.',
+      '5. מתי חייבים להסלים לגורם מקצועי או לדווח, ומתי לעצור את התהליך.',
+      '6. מה חייב להיות מתועד בתיק כדי שהבדיקה תעמוד בביקורת.',
+      '',
+      'אל תסיק מסקנה על אדם או גוף ספציפי, ואל תבקש ממני פרטים מזהים.'
+    ],
+    checks:[
+      'לא הכנסתי פרטים מזהים, מסמכי זהות או מידע אישי לצ׳אט',
+      'התהליך מאושר במסגרת נהלי הציות של הארגון',
+      'ההחלטה מתקבלת על ידי גורם מוסמך ולא על סמך פלט AI',
+      'הבדיקה בוצעה מול מאגרים ומקורות רשמיים',
+      'התיעוד בתיק מלא ועומד בדרישות הביקורת'
+    ]
+  }
+];
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'eqr.v1', DRAFT = 'eqr.draft.v1';
+  var $ = function (id) { return document.getElementById(id); };
+  var byTool = {};
+  TOOLS.forEach(function (t) { byTool[t.id] = t; });
+
+  /* ── storage (never let a blocked localStorage break the page) ── */
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function save(list) {
+    try { localStorage.setItem(KEY, JSON.stringify(list)); return true; }
+    catch (e) { toast('לא ניתן לשמור — אחסון הדפדפן חסום'); return false; }
+  }
+  var entries = load();
+
+  function toast(msg) {
+    var el = $('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { el.classList.remove('show'); }, 2400);
+  }
+
+  /* ── navigation ── */
+  var screens = ['start', 'tool', 'tools', 'log'];
+  function show(name) {
+    screens.forEach(function (s) {
+      $('screen-' + s).classList.toggle('active', s === name);
+    });
+    document.querySelectorAll('.tab').forEach(function (tab) {
+      var on = tab.getAttribute('data-screen') === name ||
+               (name === 'tool' && tab.getAttribute('data-screen') === 'tools');
+      tab.setAttribute('aria-selected', String(on));
+    });
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+  document.querySelectorAll('.tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var s = tab.getAttribute('data-screen');
+      location.hash = s === 'start' ? '' : s;
+      show(s);
+      if (s === 'log') renderLog();
+    });
+  });
+  $('backBtn').addEventListener('click', function () {
+    if (history.length > 1) history.back(); else { location.hash = ''; show('start'); }
+  });
+
+  /* ══════════ START: situation list ══════════ */
+  var sits = $('sits');
+  TOOLS.forEach(function (t) {
+    var b = document.createElement('button');
+    b.className = 'sit';
+    b.type = 'button';
+    b.innerHTML =
+      '<span class="ico">' + t.sit.icon + '</span>' +
+      '<span class="txt"><span class="t">' + t.sit.t + '</span><br><span class="s">' + t.sit.s + '</span></span>' +
+      '<span class="arrow">←</span>';
+    b.addEventListener('click', function () { openTool(t.id); });
+    sits.appendChild(b);
+  });
+
+  /* ══════════ TOOLS: catalog ══════════ */
+  var grid = $('grid');
+  TOOLS.forEach(function (t) {
+    var c = document.createElement('button');
+    c.className = 'tcard';
+    c.type = 'button';
+    c.setAttribute('data-cat', t.cat);
+    c.innerHTML =
+      '<div class="tool-head"><span class="num">' + t.num + '</span><span class="tag">' + t.tag + '</span></div>' +
+      '<h3>' + t.name + '</h3>' +
+      '<p class="tl">' + t.tagline + '</p>' +
+      '<p class="d">' + t.desc + '</p>' +
+      '<span class="go">פתח שולחן עבודה ←</span>';
+    c.addEventListener('click', function () { openTool(t.id); });
+    grid.appendChild(c);
+  });
+
+  function applyFilter(f) {
+    var shown = 0;
+    grid.querySelectorAll('.tcard').forEach(function (c) {
+      var match = f === 'all' || c.getAttribute('data-cat') === f;
+      c.classList.toggle('hidden', !match);
+      if (match) shown++;
+    });
+    $('count').textContent = 'מוצגים ' + shown + ' מתוך ' + TOOLS.length + ' כלים';
+    document.querySelectorAll('.chip').forEach(function (ch) {
+      ch.setAttribute('aria-pressed', String(ch.getAttribute('data-filter') === f));
+    });
+  }
+  document.querySelectorAll('.chip').forEach(function (ch) {
+    ch.addEventListener('click', function () { applyFilter(ch.getAttribute('data-filter')); });
+  });
+  applyFilter('all');
+
+  /* ══════════ TOOL workspace ══════════ */
+  var current = null;      // active tool
+  var currentEntry = null; // entry id being edited, or null for a new one
+  var values = {};
+  var checkState = [];
+
+  function openTool(id, entry) {
+    var t = byTool[id];
+    if (!t) return;
+    current = t;
+    currentEntry = entry ? entry.id : null;
+    values = {};
+    checkState = t.checks.map(function () { return false; });
+
+    if (entry) {
+      values = Object.assign({}, entry.fields);
+      checkState = t.checks.map(function (_, i) { return !!(entry.checks && entry.checks[i]); });
+    } else {
+      var d = readDraft(id);
+      if (d) { values = d.values || {}; checkState = t.checks.map(function (_, i) { return !!(d.checks && d.checks[i]); }); }
     }
 
-    chips.forEach(function (chip) {
-      chip.addEventListener('click', function () {
-        apply(chip.getAttribute('data-filter'));
+    $('toolNum').textContent = t.num;
+    $('toolTag').textContent = t.tag;
+    $('toolName').textContent = t.name;
+    $('toolTagline').textContent = t.tagline;
+    $('toolDesc').textContent = t.desc;
+    $('toolWho').textContent = t.who;
+    $('toolWhen').textContent = t.when;
+    $('toolCheck').textContent = t.check;
+
+    renderFields(t);
+    renderChecks(t);
+    $('jThesis').value = entry ? (entry.thesis || '') : '';
+    $('jInvalidate').value = entry ? (entry.invalidate || '') : '';
+    $('jVerify').value = entry ? (entry.verify || '') : '';
+    $('jDate').value = entry ? (entry.date || '') : '';
+    $('saveBtn').textContent = entry ? 'עדכן ביומן' : 'שמור ביומן';
+
+    renderPrompt();
+    location.hash = 'tool/' + t.id;
+    show('tool');
+  }
+
+  function renderFields(t) {
+    var box = $('fields');
+    box.innerHTML = '';
+    t.fields.forEach(function (key) {
+      var f = FIELDS[key];
+      if (!f) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'field';
+      var id = 'f_' + key;
+      var label = '<label for="' + id + '">' + f.label +
+        (f.sub ? ' <span class="sub">' + f.sub + '</span>' : '') + '</label>';
+      var control;
+      if (f.type === 'textarea') {
+        control = '<textarea id="' + id + '" placeholder="' + (f.ph || '') + '"></textarea>';
+      } else if (f.type === 'select') {
+        control = '<select id="' + id + '">' + f.options.map(function (o) {
+          return '<option value="' + o + '">' + o + '</option>';
+        }).join('') + '</select>';
+      } else {
+        control = '<input type="text" id="' + id + '" placeholder="' + (f.ph || '') + '" />';
+      }
+      wrap.innerHTML = label + control;
+      box.appendChild(wrap);
+
+      var el = $(id);
+      if (values[key] !== undefined) el.value = values[key];
+      else if (f.type === 'select') values[key] = el.value;
+      el.addEventListener('input', function () {
+        values[key] = el.value;
+        renderPrompt();
+        writeDraft();
+      });
+      el.addEventListener('change', function () {
+        values[key] = el.value;
+        renderPrompt();
+        writeDraft();
       });
     });
+  }
 
-    apply('all');
-  })();
+  function buildPrompt(t, vals) {
+    return t.prompt.map(function (line) {
+      var keys = [];
+      line.replace(/\{\{(\w+)\}\}/g, function (_, k) { keys.push(k); return ''; });
+      var missing = keys.some(function (k) { return !(vals[k] || '').trim(); });
+      if (missing) return null;
+      return line.replace(/\{\{(\w+)\}\}/g, function (_, k) { return vals[k].trim(); });
+    }).filter(function (l) { return l !== null; }).join('\n');
+  }
+
+  function renderPrompt() {
+    if (!current) return;
+    var text = buildPrompt(current, values);
+    $('promptBox').textContent = text;
+    $('openClaude').href = 'https://claude.ai/new?q=' + encodeURIComponent(text);
+  }
+
+  function renderChecks(t) {
+    var box = $('checks');
+    box.innerHTML = '';
+    t.checks.forEach(function (text, i) {
+      var l = document.createElement('label');
+      l.className = 'check';
+      l.innerHTML = '<input type="checkbox"' + (checkState[i] ? ' checked' : '') + ' /><span>' + text + '</span>';
+      l.querySelector('input').addEventListener('change', function (e) {
+        checkState[i] = e.target.checked;
+        updateProgress();
+        writeDraft();
+      });
+      box.appendChild(l);
+    });
+    updateProgress();
+  }
+
+  function updateProgress() {
+    var done = checkState.filter(Boolean).length;
+    var pct = checkState.length ? (done / checkState.length) * 100 : 0;
+    $('progBar').style.width = pct + '%';
+  }
+
+  /* draft: survives a refresh mid-research */
+  function writeDraft() {
+    if (!current) return;
+    try {
+      var all = {};
+      try { all = JSON.parse(localStorage.getItem(DRAFT) || '{}'); } catch (e) { all = {}; }
+      all[current.id] = { values: values, checks: checkState };
+      localStorage.setItem(DRAFT, JSON.stringify(all));
+    } catch (e) {}
+  }
+  function readDraft(id) {
+    try { return (JSON.parse(localStorage.getItem(DRAFT) || '{}'))[id] || null; }
+    catch (e) { return null; }
+  }
+  function dropDraft(id) {
+    try {
+      var all = JSON.parse(localStorage.getItem(DRAFT) || '{}');
+      delete all[id];
+      localStorage.setItem(DRAFT, JSON.stringify(all));
+    } catch (e) {}
+  }
+
+  /* copy */
+  $('copyBtn').addEventListener('click', function () {
+    var text = $('promptBox').textContent;
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); toast('הפרומפט הועתק'); }
+      catch (e) { toast('העתקה נכשלה — סמן ידנית'); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast('הפרומפט הועתק'); }, fallback);
+    } else fallback();
+  });
+
+  $('clearBtn').addEventListener('click', function () {
+    if (!current) return;
+    values = {};
+    checkState = current.checks.map(function () { return false; });
+    currentEntry = null;
+    dropDraft(current.id);
+    renderFields(current);
+    renderChecks(current);
+    ['jThesis', 'jInvalidate', 'jVerify', 'jDate'].forEach(function (id) { $(id).value = ''; });
+    $('saveBtn').textContent = 'שמור ביומן';
+    renderPrompt();
+    toast('הטופס נוקה');
+  });
+
+  /* ══════════ save to log ══════════ */
+  function entryTitle(t, vals) {
+    return (vals.ticker || vals.sector || vals.meeting || vals.deal || vals.subject || t.name).trim().slice(0, 60);
+  }
+
+  $('saveBtn').addEventListener('click', function () {
+    if (!current) return;
+    var title = entryTitle(current, values);
+    if (!title) { toast('מלא לפחות שם חברה או נושא'); return; }
+    var now = new Date().toISOString();
+    var rec = {
+      id: currentEntry || ('e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)),
+      toolId: current.id,
+      title: title,
+      fields: Object.assign({}, values),
+      checks: checkState.slice(),
+      thesis: $('jThesis').value.trim(),
+      invalidate: $('jInvalidate').value.trim(),
+      verify: $('jVerify').value.trim(),
+      date: $('jDate').value,
+      created: now,
+      updated: now
+    };
+    var idx = entries.findIndex(function (e) { return e.id === rec.id; });
+    if (idx > -1) { rec.created = entries[idx].created || now; entries[idx] = rec; }
+    else entries.unshift(rec);
+    if (!save(entries)) return;
+    currentEntry = rec.id;
+    dropDraft(current.id);
+    $('saveBtn').textContent = 'עדכן ביומן';
+    updateBadge();
+    toast(idx > -1 ? 'הרשומה עודכנה' : 'נשמר ביומן');
+  });
+
+  /* ══════════ log ══════════ */
+  function daysTo(dateStr) {
+    if (!dateStr) return null;
+    var d = new Date(dateStr + 'T00:00:00');
+    if (isNaN(d)) return null;
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((d - today) / 86400000);
+  }
+  function fmtDate(iso) {
+    try { return new Date(iso).toLocaleDateString('he-IL'); } catch (e) { return ''; }
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+
+  function sorted() {
+    return entries.slice().sort(function (a, b) {
+      var da = daysTo(a.date), db = daysTo(b.date);
+      var ka = da === null ? Infinity : (da < 0 ? 9000 + da : da);
+      var kb = db === null ? Infinity : (db < 0 ? 9000 + db : db);
+      if (ka !== kb) return ka - kb;
+      return (b.updated || '').localeCompare(a.updated || '');
+    });
+  }
+
+  function renderLog() {
+    var box = $('entries');
+    box.innerHTML = '';
+    if (!entries.length) {
+      box.innerHTML = '<div class="empty"><b>היומן עוד ריק</b>בחר מצב במסך ההתחלה, מלא את הפרטים ושמור את התזה. בעוד רבעון תודה לעצמך.</div>';
+      return;
+    }
+    sorted().forEach(function (e) {
+      var t = byTool[e.toolId];
+      var d = daysTo(e.date);
+      var pill = '';
+      if (d !== null) {
+        var cls = d < 0 ? 'past' : (d <= 14 ? 'soon' : '');
+        var txt = d < 0 ? 'עבר לפני ' + Math.abs(d) + ' ימים' : (d === 0 ? 'היום' : 'בעוד ' + d + ' ימים');
+        pill = '<span class="pill ' + cls + '">' + txt + '</span>';
+      }
+      var done = (e.checks || []).filter(Boolean).length;
+      var total = t ? t.checks.length : (e.checks || []).length;
+      var checkCls = total && done === total ? 'done' : '';
+      var el = document.createElement('div');
+      el.className = 'entry';
+      el.innerHTML =
+        '<div class="entry-top">' +
+          '<span class="ticker">' + esc(e.title) + '</span>' +
+          '<span class="tool">' + esc(t ? t.name : e.toolId) + '</span>' +
+          pill +
+          '<span class="pill ' + checkCls + '">אימות ' + done + '/' + total + '</span>' +
+        '</div>' +
+        (e.thesis ? '<p class="thesis">' + esc(e.thesis) + '</p>' : '') +
+        (e.invalidate ? '<p class="line"><b>משנה דעה: </b>' + esc(e.invalidate) + '</p>' : '') +
+        (e.verify ? '<p class="line"><b>לאמת: </b>' + esc(e.verify) + '</p>' : '') +
+        '<p class="line" style="color:var(--dim)">עודכן ' + fmtDate(e.updated) + '</p>' +
+        '<div class="actions">' +
+          '<button class="btn btn-ghost btn-sm" data-act="open">פתח והמשך</button>' +
+          '<button class="btn btn-danger btn-sm" data-act="del">מחק</button>' +
+        '</div>';
+      el.querySelector('[data-act="open"]').addEventListener('click', function () { openTool(e.toolId, e); });
+      el.querySelector('[data-act="del"]').addEventListener('click', function () {
+        if (!confirm('למחוק את "' + e.title + '"?')) return;
+        entries = entries.filter(function (x) { return x.id !== e.id; });
+        save(entries);
+        updateBadge();
+        renderLog();
+        toast('נמחק');
+      });
+      box.appendChild(el);
+    });
+  }
+
+  function updateBadge() {
+    var b = $('logCount');
+    b.textContent = entries.length;
+    b.hidden = entries.length === 0;
+  }
+
+  /* ══════════ export / import ══════════ */
+  function download(name, text, mime) {
+    try {
+      var blob = new Blob([text], { type: mime + ';charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function toMarkdown() {
+    var out = ['# יומן מחקר מניות', '', 'יוצא בתאריך ' + new Date().toLocaleDateString('he-IL'), ''];
+    sorted().forEach(function (e) {
+      var t = byTool[e.toolId];
+      out.push('## ' + e.title + ' — ' + (t ? t.name : e.toolId));
+      if (e.date) out.push('- **האירוע הבא:** ' + e.date);
+      if (e.thesis) out.push('- **התזה:** ' + e.thesis);
+      if (e.invalidate) out.push('- **מה ישנה את דעתי:** ' + e.invalidate);
+      if (e.verify) out.push('- **לאמת:** ' + e.verify);
+      Object.keys(e.fields || {}).forEach(function (k) {
+        if (FIELDS[k] && (e.fields[k] || '').trim()) out.push('- **' + FIELDS[k].label + ':** ' + e.fields[k].trim());
+      });
+      if (t) {
+        var done = (e.checks || []).filter(Boolean).length;
+        out.push('- **צ׳קליסט אימות:** ' + done + '/' + t.checks.length);
+        t.checks.forEach(function (c, i) {
+          out.push('  - [' + ((e.checks || [])[i] ? 'x' : ' ') + '] ' + c);
+        });
+      }
+      out.push('- _עודכן: ' + fmtDate(e.updated) + '_', '');
+    });
+    return out.join('\n');
+  }
+
+  $('exportMd').addEventListener('click', function () {
+    if (!entries.length) { toast('אין מה לייצא עדיין'); return; }
+    toast(download('research-log.md', toMarkdown(), 'text/markdown') ? 'הקובץ ירד' : 'הורדה נחסמה');
+  });
+  $('exportJson').addEventListener('click', function () {
+    if (!entries.length) { toast('אין מה לייצא עדיין'); return; }
+    toast(download('research-log.json', JSON.stringify(entries, null, 2), 'application/json') ? 'הגיבוי ירד' : 'הורדה נחסמה');
+  });
+  $('importBtn').addEventListener('click', function () { $('importFile').click(); });
+  $('importFile').addEventListener('change', function (ev) {
+    var file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var incoming = JSON.parse(reader.result);
+        if (!Array.isArray(incoming)) throw new Error('bad');
+        var have = {};
+        entries.forEach(function (e) { have[e.id] = true; });
+        var added = 0;
+        incoming.forEach(function (e) {
+          if (e && e.id && e.toolId && !have[e.id]) { entries.push(e); added++; }
+        });
+        save(entries);
+        updateBadge();
+        renderLog();
+        toast(added ? 'נוספו ' + added + ' רשומות' : 'הכול כבר קיים ביומן');
+      } catch (err) { toast('קובץ לא תקין'); }
+      ev.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  /* ══════════ routing ══════════ */
+  function route() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (h.indexOf('tool/') === 0) {
+      var t = byTool[h.slice(5)];
+      if (t) { if (!current || current.id !== t.id) openTool(t.id); else show('tool'); return; }
+    }
+    if (h === 'tools') { show('tools'); return; }
+    if (h === 'log') { renderLog(); show('log'); return; }
+    show('start');
+  }
+  window.addEventListener('hashchange', route);
+  updateBadge();
+  route();
+})();
 </script>
 
 </body>

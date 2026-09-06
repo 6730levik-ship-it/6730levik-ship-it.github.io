@@ -17,6 +17,9 @@
  */
 const CACHE_VERSION = 'matzav2-v1';
 
+// Hand-written pages served as themselves, never as the SPA shell.
+const STANDALONE = ['/combatfit', '/privacy', '/equity-research'];
+
 self.addEventListener('install', () => self.skipWaiting());
 
 self.addEventListener('activate', (event) => {
@@ -43,15 +46,32 @@ self.addEventListener('fetch', (event) => {
 
   // SPA navigations → NETWORK-FIRST so the shell is always fresh online; cache a
   // copy only as an offline fallback. Never serves a stale shell while online.
+  //
+  // Standalone hand-written pages (/combatfit/, /privacy/, /equity-research/) are NOT
+  // the SPA shell: each navigation is cached under its OWN url and falls back to itself
+  // offline, so /equity-research/ (which keeps its research log in localStorage) opens
+  // offline instead of showing the fitness app shell.
   if (request.mode === 'navigate') {
+    const isShell = !STANDALONE.some((prefix) => url.pathname.startsWith(prefix));
     event.respondWith(
       fetch(request)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE_VERSION).then((c) => c.put('/index.html', copy)).catch(() => {});
+          caches
+            .open(CACHE_VERSION)
+            .then((c) => {
+              c.put(request, copy.clone());
+              if (isShell) c.put('/index.html', copy);
+            })
+            .catch(() => {});
           return res;
         })
-        .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))
+        .catch(() =>
+          caches
+            .match(request)
+            .then((r) => r || caches.match('/index.html'))
+            .then((r) => r || caches.match('/'))
+        )
     );
     return;
   }
