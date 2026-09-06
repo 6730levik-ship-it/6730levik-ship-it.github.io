@@ -6,8 +6,15 @@
 <title>שולחן מחקר מניות — פרומפט, צ'קליסט ויומן</title>
 <meta name="description" content="כלי עבודה למחקר מניות: בוחרים מצב, מקבלים פרומפט מוכן ל-Claude, עוברים צ'קליסט אימות ושומרים תזה ביומן המחקר. הכל נשמר במכשיר שלך." />
 <meta name="theme-color" content="#060e20" />
-<link rel="icon" href="/favicon.ico" />
 <link rel="icon" type="image/png" sizes="192x192" href="/equity-research/icon-192.png" />
+<link rel="canonical" href="https://6730levik-ship-it.github.io/equity-research/" />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="he_IL" />
+<meta property="og:title" content="שולחן מחקר מניות" />
+<meta property="og:description" content="בוחרים מצב, מקבלים פרומפט מוכן, עוברים צ'קליסט אימות ושומרים תזה ביומן שחוזר לשאול אתכם אם צדקתם." />
+<meta property="og:url" content="https://6730levik-ship-it.github.io/equity-research/" />
+<meta property="og:image" content="https://6730levik-ship-it.github.io/equity-research/icon-512.png" />
+<meta name="twitter:card" content="summary" />
 <link rel="manifest" href="/equity-research/manifest.json" />
 <link rel="apple-touch-icon" href="/equity-research/apple-touch-icon.png" />
 <meta name="mobile-web-app-capable" content="yes" />
@@ -65,6 +72,14 @@
     letter-spacing:.06em;text-transform:uppercase
   }
   .ltr{direction:ltr;text-align:right;unicode-bidi:isolate}
+  :focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+  .btn:focus-visible,.tab:focus-visible,.chip:focus-visible,.seg-btn:focus-visible{outline-offset:3px}
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms!important;animation-iteration-count:1!important;
+      transition-duration:.01ms!important;scroll-behavior:auto!important
+    }
+  }
   svg.ic{width:20px;height:20px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
   /* ══════════ top bar ══════════ */
@@ -365,6 +380,13 @@
   footer{border-top:1px solid var(--line-soft);margin-top:8px;padding:18px 0 60px;position:relative;z-index:1}
   .note{color:var(--outline);font-size:12.5px;line-height:1.7;max-width:70ch}
   .note b{color:var(--on-surface-variant)}
+  @media (min-width:760px){
+    .wrap{padding:0 24px}
+    .hud{padding:12px 24px 2px}
+    .sits{grid-template-columns:1fr 1fr}
+    h1{font-size:38px;line-height:46px}
+    #actionbar{padding-inline:24px}
+  }
   @media (max-width:400px){
     h1{font-size:26px;line-height:34px}
     .tab{padding:7px 9px}
@@ -383,10 +405,10 @@
         <span class="sub caps">equity research</span>
       </span>
     </div>
-    <div class="tabs" role="tablist">
-      <button class="tab" role="tab" data-screen="start" aria-selected="true">התחלה</button>
-      <button class="tab" role="tab" data-screen="tools" aria-selected="false">הכלים</button>
-      <button class="tab" role="tab" data-screen="log" aria-selected="false">היומן<span class="badge" id="logCount" hidden>0</span></button>
+    <div class="tabs" role="tablist" aria-label="מסכי השולחן">
+      <button class="tab" role="tab" id="tab-start" data-screen="start" aria-controls="screen-start" aria-selected="true">התחלה</button>
+      <button class="tab" role="tab" id="tab-tools" data-screen="tools" aria-controls="screen-tools" aria-selected="false" tabindex="-1">הכלים</button>
+      <button class="tab" role="tab" id="tab-log" data-screen="log" aria-controls="screen-log" aria-selected="false" tabindex="-1">היומן<span class="badge" id="logCount" hidden>0</span></button>
     </div>
   </div>
 </div>
@@ -397,7 +419,7 @@
 </div>
 
 <!-- ══════════ START ══════════ -->
-<section class="screen active" id="screen-start">
+<section class="screen active" id="screen-start" role="tabpanel" aria-labelledby="tab-start">
   <div class="wrap">
     <h1>מה המצב שלך עכשיו?</h1>
     <p class="lede">בוחרים מצב, מקבלים פרומפט מוכן להעתקה, עוברים צ'קליסט אימות ושומרים את התזה ביומן. הכל נשמר במכשיר שלך בלבד.</p>
@@ -502,7 +524,7 @@
 </section>
 
 <!-- ══════════ TOOLS ══════════ -->
-<section class="screen" id="screen-tools">
+<section class="screen" id="screen-tools" role="tabpanel" aria-labelledby="tab-tools">
   <div class="wrap">
     <h1>עשרת הכלים</h1>
     <p class="lede">לכל כלי: מה הוא עושה, למי הוא מתאים, ומה עדיין צריך לבדוק לבד. לחיצה פותחת את שולחן העבודה שלו.</p>
@@ -518,7 +540,7 @@
 </section>
 
 <!-- ══════════ LOG ══════════ -->
-<section class="screen" id="screen-log">
+<section class="screen" id="screen-log" role="tabpanel" aria-labelledby="tab-log">
   <div class="wrap">
     <h1>יומן המחקר שלי</h1>
     <p class="lede">כל מה ששמרת, ממוין לפי האירוע הקרוב ביותר. נשמר במכשיר שלך (localStorage) — לא נשלח לשום מקום.</p>
@@ -527,6 +549,7 @@
       <button class="btn btn-quiet btn-sm" id="exportJson">גיבוי JSON</button>
       <button class="btn btn-quiet btn-sm" id="importBtn">שחזור מגיבוי</button>
       <input type="file" id="importFile" accept="application/json,.json" hidden />
+      <button class="btn btn-danger btn-sm" id="wipeBtn">מחק הכל</button>
       <input type="search" id="logSearch" placeholder="חיפוש ביומן…" aria-label="חיפוש ביומן" />
     </div>
     <div id="entries"></div>
@@ -991,6 +1014,7 @@ var TOOLS = [
       var on = tab.getAttribute('data-screen') === name ||
                (name === 'tool' && tab.getAttribute('data-screen') === 'tools');
       tab.setAttribute('aria-selected', String(on));
+      tab.tabIndex = on ? 0 : -1;
     });
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
@@ -1002,6 +1026,29 @@ var TOOLS = [
       if (s === 'log') renderLog();
     });
   });
+  /* arrow-key navigation across the tablist, as a tablist is expected to behave */
+  var tabEls = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+  tabEls.forEach(function (tab, i) {
+    tab.addEventListener('keydown', function (e) {
+      var dir = e.key === 'ArrowLeft' ? 1 : (e.key === 'ArrowRight' ? -1 : 0); /* RTL: left moves forward */
+      if (!dir && e.key !== 'Home' && e.key !== 'End') return;
+      e.preventDefault();
+      var next = e.key === 'Home' ? 0 : e.key === 'End' ? tabEls.length - 1
+        : (i + dir + tabEls.length) % tabEls.length;
+      tabEls[next].focus();
+      tabEls[next].click();
+    });
+  });
+
+  /* Escape leaves a tool workspace the same way the back button does */
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('screen-tool').classList.contains('active')) return;
+    var t = e.target && e.target.tagName;
+    if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+    $('backBtn').click();
+  });
+
   $('backBtn').addEventListener('click', function () {
     if (history.length > 1) history.back(); else { location.hash = ''; show('start'); }
   });
@@ -1374,8 +1421,22 @@ var TOOLS = [
       updated: now
     };
     var idx = entries.findIndex(function (e) { return e.id === rec.id; });
+    if (idx === -1) {
+      // same company, same tool → almost always an update, not a second record
+      var dup = entries.findIndex(function (e) {
+        return e.toolId === rec.toolId && e.title === rec.title;
+      });
+      if (dup > -1) {
+        if (!confirm('כבר יש ביומן רשומה של "' + rec.title + '" בכלי הזה.\n\nאישור = עדכון הרשומה הקיימת. ביטול = שמירה כרשומה נפרדת.')) {
+          entries.unshift(rec);
+        } else {
+          rec.id = entries[dup].id;
+          idx = dup;
+        }
+      }
+    }
     if (idx > -1) { rec.created = entries[idx].created || now; entries[idx] = rec; }
-    else entries.unshift(rec);
+    else if (entries.indexOf(rec) === -1) entries.unshift(rec);
     if (!save(entries)) return;
     currentEntry = rec.id;
     currentRecord = rec;
@@ -1559,6 +1620,19 @@ var TOOLS = [
     if (!entries.length) { toast('אין מה לייצא עדיין'); return; }
     toast(download('research-log.json', JSON.stringify(entries, null, 2), 'application/json') ? 'הגיבוי ירד' : 'הורדה נחסמה');
   });
+  $('wipeBtn').addEventListener('click', function () {
+    if (!entries.length) { toast('אין מה למחוק'); return; }
+    if (!confirm('למחוק את כל ' + entries.length + ' הרשומות ביומן?\n\nזה בלתי הפיך. אם לא שמרת גיבוי JSON — בטל, גבה, ונסה שוב.')) return;
+    entries = [];
+    save(entries);
+    try { localStorage.removeItem(DRAFT); } catch (e) {}
+    currentEntry = null;
+    currentRecord = null;
+    updateBadge();
+    renderLog();
+    toast('היומן נמחק');
+  });
+
   $('logSearch').addEventListener('input', renderLog);
   $('importBtn').addEventListener('click', function () { $('importFile').click(); });
   $('importFile').addEventListener('change', function (ev) {
