@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>כלי מחקר מניות — מדריך כלים פיננסיים</title>
+<meta name="description" content="מדריך לכלי מחקר מניות וניתוח פיננסי: למי כל כלי מתאים, מתי להשתמש בו ומה חייבים לבדוק ידנית." />
+<meta name="theme-color" content="#1FA2FF" />
+<link rel="icon" href="/favicon.ico" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --azure:#1FA2FF;
+    --azure-bright:#33C2FF;
+    --azure-deep:#0B6FC2;
+    --slate-900:#0A0F1A;
+    --slate-850:#0E1626;
+    --slate-800:#111C30;
+    --line:rgba(31,162,255,.16);
+    --ink:#F4F8FE;
+    --frost:#C9D7E8;
+    --frost-dim:#8499B2;
+    --radius:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Heebo',"Assistant",system-ui,-apple-system,sans-serif;
+    background:var(--slate-900);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(900px 500px at 80% -5%, rgba(31,162,255,.16), transparent 60%),
+      radial-gradient(700px 500px at 0% 25%, rgba(11,111,194,.12), transparent 60%),
+      linear-gradient(180deg,#0A0F1A 0%,#0B1322 100%);
+  }
+  main,header,footer{position:relative;z-index:1}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+  a{color:var(--azure-bright);text-decoration:none}
+
+  /* ===== hero ===== */
+  header{padding:64px 0 34px;border-bottom:1px solid var(--line)}
+  .eyebrow{
+    display:inline-block;font-size:.82rem;font-weight:700;letter-spacing:.08em;
+    color:var(--azure-bright);background:rgba(31,162,255,.1);
+    border:1px solid rgba(31,162,255,.28);border-radius:999px;padding:6px 14px;margin-bottom:18px;
+  }
+  h1{font-size:clamp(2rem,5vw,3rem);font-weight:900;line-height:1.15;letter-spacing:-.5px}
+  .lede{color:var(--frost);font-size:clamp(1rem,2.2vw,1.15rem);max-width:62ch;margin-top:14px}
+
+  /* ===== filters ===== */
+  .filters{display:flex;flex-wrap:wrap;gap:10px;padding:26px 0 4px}
+  .chip{
+    font:inherit;font-weight:700;font-size:.92rem;cursor:pointer;
+    color:var(--frost);background:rgba(255,255,255,.04);
+    border:1.5px solid rgba(31,162,255,.22);border-radius:999px;padding:9px 18px;
+    transition:.2s background,.2s color,.2s border-color,.2s transform;
+  }
+  .chip:hover{transform:translateY(-1px);background:rgba(31,162,255,.12)}
+  .chip[aria-pressed="true"]{
+    background:linear-gradient(135deg,var(--azure-bright),var(--azure-deep));
+    border-color:transparent;color:#fff;box-shadow:0 8px 24px rgba(31,162,255,.28);
+  }
+  .count{color:var(--frost-dim);font-size:.9rem;padding:14px 0 0}
+
+  /* ===== cards ===== */
+  .grid{
+    display:grid;gap:18px;padding:22px 0 60px;
+    grid-template-columns:repeat(auto-fill,minmax(330px,1fr));
+  }
+  .card{
+    background:linear-gradient(180deg,var(--slate-850),var(--slate-800));
+    border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 22px 20px;display:flex;flex-direction:column;gap:12px;
+    transition:.25s transform,.25s border-color,.25s box-shadow;
+  }
+  .card:hover{transform:translateY(-3px);border-color:rgba(31,162,255,.4);box-shadow:0 18px 40px rgba(0,0,0,.35)}
+  .card.hidden{display:none}
+  .card-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .num{
+    font-variant-numeric:tabular-nums;font-weight:900;font-size:.95rem;
+    color:var(--azure-bright);background:rgba(31,162,255,.12);
+    border-radius:9px;padding:3px 9px;letter-spacing:.04em;
+  }
+  .tag{font-size:.78rem;font-weight:700;color:var(--frost-dim);letter-spacing:.02em}
+  h2{font-size:1.3rem;font-weight:800;line-height:1.25;direction:ltr;text-align:right}
+  .tagline{color:var(--azure-bright);font-weight:700;font-size:.98rem;margin-top:-6px}
+  .desc{color:var(--frost);font-size:.97rem}
+  dl{display:grid;gap:10px;margin-top:2px;padding-top:14px;border-top:1px solid rgba(31,162,255,.12)}
+  dt{font-size:.8rem;font-weight:800;color:var(--frost-dim);letter-spacing:.02em}
+  dd{font-size:.94rem;color:#D5DBE6;margin-top:1px}
+  .row-check dd{color:#FFD9A8}
+
+  /* ===== footer ===== */
+  footer{border-top:1px solid var(--line);padding:28px 0 70px}
+  .note{
+    background:rgba(255,255,255,.03);border:1px solid var(--line);
+    border-radius:14px;padding:16px 18px;color:var(--frost);font-size:.93rem;max-width:70ch;
+  }
+  .note strong{color:var(--ink)}
+  .back{display:inline-block;margin-top:20px;font-weight:700;font-size:.95rem}
+
+  @media (max-width:520px){
+    header{padding:44px 0 26px}
+    .card{padding:20px 18px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="eyebrow">מדריך כלים · מחקר מניות</span>
+    <h1>כלי מחקר מניות — מה כל אחד עושה, ולמי הוא מתאים</h1>
+    <p class="lede">עשרה כלים למחקר חברות וניתוח פיננסי. לכל כלי כתוב למי הוא מתאים, מתי כדאי להשתמש בו, ובעיקר — מה עדיין צריך לבדוק לבד.</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="filters" role="group" aria-label="סינון לפי סוג משתמש">
+    <button class="chip" type="button" data-filter="all" aria-pressed="true">הכל</button>
+    <button class="chip" type="button" data-filter="retail" aria-pressed="false">משקיע פרטי</button>
+    <button class="chip" type="button" data-filter="pro" aria-pressed="false">עבודה מקצועית</button>
+    <button class="chip" type="button" data-filter="industry" aria-pressed="false">תעשייה ורגולציה</button>
+  </div>
+  <p class="count" id="count" aria-live="polite"></p>
+
+  <section class="grid" id="grid">
+
+    <article class="card" data-cat="retail">
+      <div class="card-top"><span class="num">01</span><span class="tag">Retail relevant</span></div>
+      <h2>Equity Research</h2>
+      <p class="tagline">הכלי המרכזי למחקר מניות</p>
+      <p class="desc">מרכז עבודה שלם למחקר חברה: earnings, initiating coverage, screen, sector, thesis, catalysts, model update ו־morning note.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>משקיע פרטי שרוצה לעבוד כמו אנליסט</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>כשיש מניה שרוצים להבין לעומק, עם דוחות, שיחת משקיעים ותזה מסודרת.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>זה לא אומר אם לקנות. זה מסביר מה השתנה, מה הסיכונים ומה צריך לבדוק.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="retail">
+      <div class="card-top"><span class="num">02</span><span class="tag">Retail relevant · Agent</span></div>
+      <h2>Earnings Reviewer</h2>
+      <p class="tagline">הכלי הכי חד אחרי דוחות</p>
+      <p class="desc">קורא תוצאות, transcript ושיחת משקיעים, ומחזיר את השינויים החשובים: הכנסות, guidance, סיכונים ומה לעדכן במודל.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>מי שמחזיק מניות ועוקב אחרי רבעונים</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>חברה פרסמה דוח ורוצים להבין מהר אם הסיפור השתנה.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>עדיין בודקים את המספרים הקריטיים ידנית. Claude עוזר לקרוא, לא מחליט בשבילך.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="retail">
+      <div class="card-top"><span class="num">03</span><span class="tag">Retail relevant · Skill bundle</span></div>
+      <h2>Financial Analysis</h2>
+      <p class="tagline">המתמטיקה: DCF, comps ומודלים</p>
+      <p class="desc">עוזר עם DCF, comps, three-statement models, audits ועבודה ישירות מול Excel.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>מי שרוצה להבין שווי ולא רק לקרוא תקציר</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>כשצריך ניתוח מספרי, השוואת מכפילים או ביקורת על מודל קיים.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>ההנחות הן הסיפור. כל נוסחה וטווח שווי צריכים בדיקה אנושית.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="retail">
+      <div class="card-top"><span class="num">04</span><span class="tag">Retail relevant · Agent</span></div>
+      <h2>Market Researcher</h2>
+      <p class="tagline">מבט רחב על סקטור או תמה</p>
+      <p class="desc">ממפה סקטור, משווה peers, מזהה תמות ומחזיר תמונת שוק לפני שנכנסים לחברה ספציפית.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>משקיע שרוצה למצוא רעיונות או להבין תחום</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>כשלא יודעים איפה להתחיל ורוצים להבין מי השחקנים ומה הכיוון.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>זו מפת מחקר ראשונית, לא המלצת קנייה או מכירה.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="pro">
+      <div class="card-top"><span class="num">05</span><span class="tag">Professional workflow</span></div>
+      <h2>Pitch Agent</h2>
+      <p class="tagline">הפיכת מחקר לפיץ׳</p>
+      <p class="desc">הופך מחקר גולמי לסיפור: למה ההזדמנות מעניינת, מה הסיכון ומה הטיעון המרכזי.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>אנליסט / בנקאות השקעות / יועץ</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>יותר מתאים למצגות ועסקאות מאשר לניהול תיק אישי.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>פיץ׳ יכול להישמע משכנע מדי. מפרידים עובדות, הנחות ודעה.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="pro">
+      <div class="card-top"><span class="num">06</span><span class="tag">Professional workflow</span></div>
+      <h2>Meeting Prep</h2>
+      <p class="tagline">הכנה לפגישות</p>
+      <p class="desc">מכין רקע, שאלות, נקודות סיכון וסדר יום לפני שיחה עם חברה, משקיע או לקוח פיננסי.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>צוות פיננסים / יועצים / אנשי מכירות</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>לפני פגישה מקצועית שבה צריך להגיע עם שאלות ולא עם תחושת בטן.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>לא להכניס מידע רגיש בלי צורך.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="pro">
+      <div class="card-top"><span class="num">07</span><span class="tag">Professional workflow</span></div>
+      <h2>Model Builder</h2>
+      <p class="tagline">בניית מודל פיננסי</p>
+      <p class="desc">עוזר לבנות מבנה למודל הכנסות, רווחיות, תרחישים ותחזיות.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>אנליסט / צוות כספים</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>כשצריך גיליון עבודה שמתחיל מסודר במקום להמציא Excel מאפס.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>המודל הוא התחלה. ההנחות הן העבודה האמיתית.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="pro">
+      <div class="card-top"><span class="num">08</span><span class="tag">Professional workflow</span></div>
+      <h2>Valuation Reviewer</h2>
+      <p class="tagline">ביקורת שווי</p>
+      <p class="desc">בודק אם סיפור השווי, ה־DCF, המכפילים וההשוואות באמת מחזיקים מים.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>אנליסט / משקיע מתקדם</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>לפני שמסתמכים על מודל, מצגת או תזה פיננסית.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>ביקורת טובה תלויה באיכות הנתונים שהכנסת.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="industry">
+      <div class="card-top"><span class="num">09</span><span class="tag">Industry workflow</span></div>
+      <h2>Investment Banking</h2>
+      <p class="tagline">עבודת בנקאות השקעות</p>
+      <p class="desc">עוזר בעבודות כמו pitch decks, בדיקות עסקה, חומרים למשקיעים ומבנה ניתוח לעסקאות.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>בנקאי השקעות / צוות עסקאות</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>יותר לתעשייה ולצוותי עסקאות, פחות למשקיע פרטי בבית.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>לא רלוונטי לרוב האנשים אלא אם עובדים על עסקה אמיתית.</dd></div>
+      </dl>
+    </article>
+
+    <article class="card" data-cat="industry">
+      <div class="card-top"><span class="num">10</span><span class="tag">Compliance workflow</span></div>
+      <h2>KYC Screener</h2>
+      <p class="tagline">בדיקת זהות וסיכון</p>
+      <p class="desc">עוזר לסנן רקע, זהות, מסמכים וסימני סיכון בתהליכי KYC.</p>
+      <dl>
+        <div><dt>למי זה מתאים</dt><dd>צוות פיננסים / Compliance</dd></div>
+        <div><dt>מתי להשתמש</dt><dd>עבודה מקצועית של גוף פיננסי, לא שימוש רגיל של משקיע פרטי.</dd></div>
+        <div class="row-check"><dt>מה לבדוק</dt><dd>רגולציה ופרטיות קודם. לא משתמשים בזה בלי תהליך מאושר.</dd></div>
+      </dl>
+    </article>
+
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="note"><strong>הבהרה:</strong> הדף הזה הוא מדריך כלים בלבד ואינו ייעוץ השקעות, שיווק השקעות או המלצה לקנות או למכור נייר ערך כלשהו. כל כלי כאן עוזר לקרוא, לארגן ולנתח מידע — ההחלטה, האחריות ובדיקת המספרים נשארות אצלך.</p>
+    <a class="back" href="/">← חזרה לדף הבית</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+    var cards = Array.prototype.slice.call(document.querySelectorAll('.card'));
+    var count = document.getElementById('count');
+
+    function apply(filter) {
+      var shown = 0;
+      cards.forEach(function (card) {
+        var match = filter === 'all' || card.getAttribute('data-cat') === filter;
+        card.classList.toggle('hidden', !match);
+        if (match) shown++;
+      });
+      count.textContent = 'מוצגים ' + shown + ' מתוך ' + cards.length + ' כלים';
+      chips.forEach(function (chip) {
+        chip.setAttribute('aria-pressed', String(chip.getAttribute('data-filter') === filter));
+      });
+    }
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        apply(chip.getAttribute('data-filter'));
+      });
+    });
+
+    apply('all');
+  })();
+</script>
+
+</body>
+</html>
