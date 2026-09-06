@@ -7,7 +7,13 @@
 <meta name="description" content="כלי עבודה למחקר מניות: בוחרים מצב, מקבלים פרומפט מוכן ל-Claude, עוברים צ'קליסט אימות ושומרים תזה ביומן המחקר. הכל נשמר במכשיר שלך." />
 <meta name="theme-color" content="#060e20" />
 <link rel="icon" href="/favicon.ico" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="/equity-research/icon-192.png" />
+<link rel="manifest" href="/equity-research/manifest.json" />
+<link rel="apple-touch-icon" href="/equity-research/apple-touch-icon.png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="שולחן מחקר" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -231,6 +237,25 @@
   .btn-danger{background:rgba(147,0,10,.35);color:var(--error);border:1px solid rgba(255,180,171,.25)}
   .btn-sm{padding:7px 12px;min-height:0;font-size:13px;border-radius:var(--r-sm)}
 
+  /* ══════════ prior entry callout + prompt modes ══════════ */
+  .prior{margin-top:10px;border:1px solid rgba(69,223,164,.35)}
+  .prior-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--tertiary)}
+  .prior-thesis{font-size:14.5px;color:var(--on-surface);margin-top:8px}
+  .prior-line{font-size:13px;color:var(--on-surface-variant);margin-top:4px}
+  .prior .btn{margin-top:12px}
+  .seg{display:flex;gap:4px;background:var(--surf-lowest);border-radius:var(--r);padding:3px;margin-bottom:10px}
+  .seg[hidden]{display:none}
+  .seg-btn{
+    flex:1;background:transparent;border:none;border-radius:var(--r-sm);padding:7px 8px;
+    font-size:13px;font-weight:600;color:var(--on-surface-variant);transition:.16s
+  }
+  .seg-btn[aria-pressed="true"]{background:var(--surf-high);color:var(--on-surface)}
+  #logSearch{
+    flex:1;min-width:140px;background:var(--surf-lowest);border:1px solid var(--line);
+    border-radius:var(--r-sm);color:var(--on-surface);padding:7px 11px;font-size:13px
+  }
+  #logSearch:focus{outline:none;border-color:var(--primary-container)}
+
   /* ══════════ checklist ══════════ */
   .checks{display:grid;gap:7px}
   .check{
@@ -415,6 +440,16 @@
       </dl>
     </div>
 
+    <div class="card node prior" id="priorCard" hidden>
+      <div class="prior-head">
+        <span class="caps">רשומה קודמת ביומן</span>
+        <span class="pill" id="priorAge"></span>
+      </div>
+      <p class="prior-thesis" id="priorThesis"></p>
+      <p class="prior-line" id="priorInvalidate"></p>
+      <button class="btn btn-ghost btn-sm" id="priorBtn">בנה פרומפט מעקב ←</button>
+    </div>
+
     <h2 class="section-title"><span class="n">1</span>מלא את הפרטים</h2>
     <p class="hint">כל שדה שתשאיר ריק פשוט יושמט מהפרומפט. ככל שתיתן יותר הקשר — התשובה תהיה פחות כללית.</p>
     <div class="card"><div class="fields" id="fields"></div></div>
@@ -422,7 +457,11 @@
     <h2 class="section-title"><span class="n">2</span>הפרומפט שלך</h2>
     <p class="hint">מתעדכן תוך כדי הקלדה. העתק והדבק ב-Claude, ותצרף את הדוח או ה-transcript כקובץ.</p>
     <div class="card">
-      <div class="code-head caps"><span class="file">prompt.md</span><span id="promptMeta">0 שורות</span></div>
+      <div class="seg" id="promptModes" hidden>
+        <button class="seg-btn" data-mode="new" aria-pressed="true">פרומפט חדש</button>
+        <button class="seg-btn" data-mode="followup" aria-pressed="false">מעקב על התזה</button>
+      </div>
+      <div class="code-head caps"><span class="file" id="promptFile">prompt.md</span><span id="promptMeta">0 שורות</span></div>
       <div class="prompt-box" id="promptBox"></div>
     </div>
 
@@ -488,6 +527,7 @@
       <button class="btn btn-quiet btn-sm" id="exportJson">גיבוי JSON</button>
       <button class="btn btn-quiet btn-sm" id="importBtn">שחזור מגיבוי</button>
       <input type="file" id="importFile" accept="application/json,.json" hidden />
+      <input type="search" id="logSearch" placeholder="חיפוש ביומן…" aria-label="חיפוש ביומן" />
     </div>
     <div id="entries"></div>
   </div>
@@ -1025,14 +1065,18 @@ var TOOLS = [
   /* ══════════ TOOL workspace ══════════ */
   var current = null;      // active tool
   var currentEntry = null; // entry id being edited, or null for a new one
+  var currentRecord = null;// the saved record itself, when we are continuing one
+  var promptMode = 'new';  // 'new' | 'followup'
   var values = {};
   var checkState = [];
 
-  function openTool(id, entry) {
+  function openTool(id, entry, mode) {
     var t = byTool[id];
     if (!t) return;
     current = t;
     currentEntry = entry ? entry.id : null;
+    currentRecord = entry || null;
+    promptMode = (mode === 'followup' && canFollowup(entry)) ? 'followup' : 'new';
     values = {};
     checkState = t.checks.map(function () { return false; });
 
@@ -1055,6 +1099,7 @@ var TOOLS = [
 
     renderFields(t);
     renderChecks(t);
+    renderPrior();
     $('jThesis').value = entry ? (entry.thesis || '') : '';
     $('jInvalidate').value = entry ? (entry.invalidate || '') : '';
     $('jVerify').value = entry ? (entry.verify || '') : '';
@@ -1106,6 +1151,99 @@ var TOOLS = [
     });
   }
 
+  /* ── the follow-up loop: come back to a thesis you wrote and test it ── */
+  function canFollowup(rec) {
+    return !!(rec && rec.thesis && rec.thesis.trim());
+  }
+
+  function daysSince(iso) {
+    if (!iso) return null;
+    var d = new Date(iso);
+    if (isNaN(d)) return null;
+    d.setHours(0, 0, 0, 0);
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.max(0, Math.round((today - d) / 86400000));
+  }
+
+  function renderPrior() {
+    var on = canFollowup(currentRecord);
+    $('priorCard').hidden = !on;
+    $('promptModes').hidden = !on;
+    if (!on) { promptMode = 'new'; setMode('new'); return; }
+    var age = daysSince(currentRecord.updated);
+    $('priorAge').textContent = age === 0 ? 'נכתב היום' : 'לפני ' + age + ' ימים';
+    $('priorThesis').textContent = currentRecord.thesis;
+    $('priorInvalidate').textContent = currentRecord.invalidate
+      ? 'משנה דעה: ' + currentRecord.invalidate : '';
+    setMode(promptMode);
+  }
+
+  function setMode(mode) {
+    promptMode = mode;
+    document.querySelectorAll('.seg-btn').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === mode));
+    });
+    $('promptFile').textContent = mode === 'followup' ? 'followup.md' : 'prompt.md';
+    renderPrompt();
+  }
+
+  document.querySelectorAll('.seg-btn').forEach(function (b) {
+    b.addEventListener('click', function () { setMode(b.getAttribute('data-mode')); });
+  });
+  $('priorBtn').addEventListener('click', function () {
+    setMode('followup');
+    $('promptBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+
+  function buildFollowup(t, rec) {
+    var age = daysSince(rec.updated);
+    var out = [];
+    out.push('אני חוזר לבדוק תזה שכתבתי בעצמי על ' + rec.title + '. תפקידך לעזור לי לראות מה השתנה — לא לאשר את מה שכתבתי.');
+    out.push('');
+    out.push('התזה נכתבה ב-' + fmtDate(rec.updated) + (age ? ' (לפני ' + age + ' ימים)' : ' (היום)') + '.');
+    out.push('התזה שלי אז: ' + rec.thesis);
+    if (rec.invalidate) out.push('מה שהגדרתי מראש שישנה את דעתי: ' + rec.invalidate);
+    if (rec.verify) out.push('מספרים שסימנתי שעוד לא אימתתי: ' + rec.verify);
+    if (rec.date) out.push('האירוע שציינתי לעקוב אחריו: ' + rec.date);
+
+    var ctx = [];
+    (t.fields || []).forEach(function (k) {
+      if (FIELDS[k] && ((rec.fields || {})[k] || '').trim()) {
+        ctx.push('· ' + FIELDS[k].label + ': ' + rec.fields[k].trim());
+      }
+    });
+    if (ctx.length) {
+      out.push('');
+      out.push('ההקשר שרשמתי אז —');
+      out = out.concat(ctx);
+    }
+
+    var done = (rec.checks || []).filter(Boolean).length;
+    if (t.checks && done < t.checks.length) {
+      out.push('');
+      out.push('בצ׳קליסט האימות שלי נשארו פתוחים:');
+      t.checks.forEach(function (c, i) {
+        if (!(rec.checks || [])[i]) out.push('· ' + c);
+      });
+    }
+
+    out.push('');
+    out.push('מקורות חדשים שאני מצרף: (הדוח, ההודעה או ה-transcript האחרון)');
+    out.push('');
+    out.push('עבוד כך:');
+    out.push('1. מה השתנה מאז, עובדתית, לפי המקורות שצירפתי. אם אין לך מקור לתקופה הזו — אמור זאת במפורש ואל תשלים מהזיכרון.');
+    out.push('2. תנאי ההפרכה שהגדרתי: התממש, התקרב, או התברר כלא רלוונטי? תשובה חד-משמעית עם נימוק.');
+    out.push('3. במה צדקתי ובמה טעיתי בתזה המקורית. בלי לרכך.');
+    out.push('4. המספרים שלא אימתתי — מה הערך שלהם היום ואיפה בדיוק לבדוק אותם.');
+    out.push('5. מה לא בדקתי בכלל — מה נעלם לי אז ורלוונטי היום.');
+    out.push('6. ניסוח מעודכן: תזה מתוקנת, או אמירה מפורשת שהיא כבר לא מחזיקה.');
+    out.push('');
+    out.push(GUARD);
+    out.push('אל תניח שהתזה שלי נכונה רק מפני שאני כתבתי אותה.');
+    return out.join('\n');
+  }
+
   function buildPrompt(t, vals) {
     return t.prompt.map(function (line) {
       var keys = [];
@@ -1118,7 +1256,9 @@ var TOOLS = [
 
   function renderPrompt() {
     if (!current) return;
-    var text = buildPrompt(current, values);
+    var text = (promptMode === 'followup' && canFollowup(currentRecord))
+      ? buildFollowup(current, currentRecord)
+      : buildPrompt(current, values);
     $('promptBox').textContent = text;
     $('openClaude').href = 'https://claude.ai/new?q=' + encodeURIComponent(text);
     var lines = text.split('\n').filter(function (l) { return l.trim(); }).length;
@@ -1172,8 +1312,7 @@ var TOOLS = [
   }
 
   /* copy */
-  $('copyBtn').addEventListener('click', function () {
-    var text = $('promptBox').textContent;
+  function copyToClipboard(text, okMsg) {
     function fallback() {
       var ta = document.createElement('textarea');
       ta.value = text;
@@ -1181,13 +1320,17 @@ var TOOLS = [
       ta.style.opacity = '0';
       document.body.appendChild(ta);
       ta.select();
-      try { document.execCommand('copy'); toast('הפרומפט הועתק'); }
+      try { document.execCommand('copy'); toast(okMsg); }
       catch (e) { toast('העתקה נכשלה — סמן ידנית'); }
       document.body.removeChild(ta);
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { toast('הפרומפט הועתק'); }, fallback);
+      navigator.clipboard.writeText(text).then(function () { toast(okMsg); }, fallback);
     } else fallback();
+  }
+
+  $('copyBtn').addEventListener('click', function () {
+    copyToClipboard($('promptBox').textContent, 'הפרומפט הועתק');
   });
 
   $('clearBtn').addEventListener('click', function () {
@@ -1195,9 +1338,12 @@ var TOOLS = [
     values = {};
     checkState = current.checks.map(function () { return false; });
     currentEntry = null;
+    currentRecord = null;
+    promptMode = 'new';
     dropDraft(current.id);
     renderFields(current);
     renderChecks(current);
+    renderPrior();
     ['jThesis', 'jInvalidate', 'jVerify', 'jDate'].forEach(function (id) { $(id).value = ''; });
     $('saveBtn').textContent = 'שמור ביומן';
     renderPrompt();
@@ -1232,8 +1378,10 @@ var TOOLS = [
     else entries.unshift(rec);
     if (!save(entries)) return;
     currentEntry = rec.id;
+    currentRecord = rec;
     dropDraft(current.id);
     $('saveBtn').textContent = 'עדכן ביומן';
+    renderPrior();
     updateBadge();
     toast(idx > -1 ? 'הרשומה עודכנה' : 'נשמר ביומן');
   });
@@ -1266,6 +1414,14 @@ var TOOLS = [
     });
   }
 
+  function matches(e, q) {
+    if (!q) return true;
+    var hay = [e.title, e.thesis, e.invalidate, e.verify, (byTool[e.toolId] || {}).name]
+      .concat(Object.keys(e.fields || {}).map(function (k) { return e.fields[k]; }))
+      .join(' ').toLowerCase();
+    return hay.indexOf(q.toLowerCase()) > -1;
+  }
+
   function renderLog() {
     var box = $('entries');
     box.innerHTML = '';
@@ -1273,7 +1429,13 @@ var TOOLS = [
       box.innerHTML = '<div class="empty"><b>היומן עוד ריק</b>בחר מצב במסך ההתחלה, מלא את הפרטים ושמור את התזה. בעוד רבעון תודה לעצמך.</div>';
       return;
     }
-    sorted().forEach(function (e) {
+    var q = ($('logSearch').value || '').trim();
+    var list = sorted().filter(function (e) { return matches(e, q); });
+    if (!list.length) {
+      box.innerHTML = '<div class="empty"><b>אין התאמה</b>שום רשומה ביומן לא מכילה את "' + esc(q) + '".</div>';
+      return;
+    }
+    list.forEach(function (e) {
       var t = byTool[e.toolId];
       var d = daysTo(e.date);
       var pill = '';
@@ -1300,9 +1462,16 @@ var TOOLS = [
         '<div class="foot"><span>עודכן ' + fmtDate(e.updated) + '</span><span>' + esc(e.toolId) + '</span></div>' +
         '<div class="actions">' +
           '<button class="btn btn-ghost btn-sm" data-act="open">פתח והמשך</button>' +
+          (canFollowup(e) ? '<button class="btn btn-ghost btn-sm" data-act="follow">מעקב</button>' : '') +
+          '<button class="btn btn-quiet btn-sm" data-act="copy">העתק</button>' +
           '<button class="btn btn-danger btn-sm" data-act="del">מחק</button>' +
         '</div>';
       el.querySelector('[data-act="open"]').addEventListener('click', function () { openTool(e.toolId, e); });
+      var f = el.querySelector('[data-act="follow"]');
+      if (f) f.addEventListener('click', function () { openTool(e.toolId, e, 'followup'); });
+      el.querySelector('[data-act="copy"]').addEventListener('click', function () {
+        copyToClipboard(entryMd(e).join('\n'), 'הרשומה הועתקה');
+      });
       el.querySelector('[data-act="del"]').addEventListener('click', function () {
         if (!confirm('למחוק את "' + e.title + '"?')) return;
         entries = entries.filter(function (x) { return x.id !== e.id; });
@@ -1355,27 +1524,30 @@ var TOOLS = [
     } catch (e) { return false; }
   }
 
+  function entryMd(e) {
+    var t = byTool[e.toolId];
+    var out = ['## ' + e.title + ' — ' + (t ? t.name : e.toolId)];
+    if (e.date) out.push('- **האירוע הבא:** ' + e.date);
+    if (e.thesis) out.push('- **התזה:** ' + e.thesis);
+    if (e.invalidate) out.push('- **מה ישנה את דעתי:** ' + e.invalidate);
+    if (e.verify) out.push('- **לאמת:** ' + e.verify);
+    Object.keys(e.fields || {}).forEach(function (k) {
+      if (FIELDS[k] && (e.fields[k] || '').trim()) out.push('- **' + FIELDS[k].label + ':** ' + e.fields[k].trim());
+    });
+    if (t) {
+      var done = (e.checks || []).filter(Boolean).length;
+      out.push('- **צ׳קליסט אימות:** ' + done + '/' + t.checks.length);
+      t.checks.forEach(function (c, i) {
+        out.push('  - [' + ((e.checks || [])[i] ? 'x' : ' ') + '] ' + c);
+      });
+    }
+    out.push('- _עודכן: ' + fmtDate(e.updated) + '_', '');
+    return out;
+  }
+
   function toMarkdown() {
     var out = ['# יומן מחקר מניות', '', 'יוצא בתאריך ' + new Date().toLocaleDateString('he-IL'), ''];
-    sorted().forEach(function (e) {
-      var t = byTool[e.toolId];
-      out.push('## ' + e.title + ' — ' + (t ? t.name : e.toolId));
-      if (e.date) out.push('- **האירוע הבא:** ' + e.date);
-      if (e.thesis) out.push('- **התזה:** ' + e.thesis);
-      if (e.invalidate) out.push('- **מה ישנה את דעתי:** ' + e.invalidate);
-      if (e.verify) out.push('- **לאמת:** ' + e.verify);
-      Object.keys(e.fields || {}).forEach(function (k) {
-        if (FIELDS[k] && (e.fields[k] || '').trim()) out.push('- **' + FIELDS[k].label + ':** ' + e.fields[k].trim());
-      });
-      if (t) {
-        var done = (e.checks || []).filter(Boolean).length;
-        out.push('- **צ׳קליסט אימות:** ' + done + '/' + t.checks.length);
-        t.checks.forEach(function (c, i) {
-          out.push('  - [' + ((e.checks || [])[i] ? 'x' : ' ') + '] ' + c);
-        });
-      }
-      out.push('- _עודכן: ' + fmtDate(e.updated) + '_', '');
-    });
+    sorted().forEach(function (e) { out = out.concat(entryMd(e)); });
     return out.join('\n');
   }
 
@@ -1387,6 +1559,7 @@ var TOOLS = [
     if (!entries.length) { toast('אין מה לייצא עדיין'); return; }
     toast(download('research-log.json', JSON.stringify(entries, null, 2), 'application/json') ? 'הגיבוי ירד' : 'הורדה נחסמה');
   });
+  $('logSearch').addEventListener('input', renderLog);
   $('importBtn').addEventListener('click', function () { $('importFile').click(); });
   $('importFile').addEventListener('change', function (ev) {
     var file = ev.target.files && ev.target.files[0];
